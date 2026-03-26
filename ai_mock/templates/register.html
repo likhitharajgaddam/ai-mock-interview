@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+.register-card {
+    width: 420px;
+    border-radius: 20px;
+
+    background: rgba(15, 23, 42, 0.98);
+    border: none;
+    box-shadow: none;
+
+    position: relative;
+    z-index: 10;
+}
+
+/* Match Login Heading */
+.register-card h2 {
+    color: #e2e8f0;
+    font-weight: 700;
+}
+
+/* Match Login Subtitle */
+.register-card p {
+    color: #94a3b8;
+}
+
+/* Labels */
+.register-card label {
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+/* Inputs */
+.register-card .form-control {
+    background: #1f2937;
+    border: 1px solid #374151;
+    color: #e2e8f0;
+}
+
+.register-card .form-control:focus {
+    background: #1f2937;
+    border-color: #4f46e5;
+    box-shadow: none;
+    color: #e2e8f0;
+}
+
+/* Register Button SAME as login */
+.register-card button {
+    background: #1f2937;
+    border: none;
+    color: #f1f5f9;
+    font-weight: 600;
+}
+
+.register-card button:hover {
+    background: #374151;
+}
+
+/* Bottom text */
+.register-card span {
+    color: #94a3b8;
+}
+
+.register-card a {
+    color: #3b82f6;
+    font-weight: 600;
+}
+</style>
+
+
+<div class="d-flex justify-content-center align-items-center"
+     style="min-height: 90vh;">
+
+    <div class="card register-card border-0 shadow-lg p-5">
+
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Create Account 👩🏻‍💻</h2>
+            <p class="text-muted">Start your AI mock interview journey</p>
+        </div>
+
+        {% if form.errors %}
+<div class="alert alert-danger">
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div>{{ error }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text"
+                       name="username"
+                       class="form-control rounded-3 py-2"
+                       style="font-size: 14px;"
+                       required>
+            </div>
+
+            <!-- Password -->
+<div class="mb-3 position-relative">
+    <label class="form-label">Password</label>
+    <input type="password"
+           name="password1"
+           id="password1"
+           class="form-control rounded-3 py-2"
+           style="font-size: 14px;"
+           required>
+    <span onclick="togglePassword('password1', this)"
+          style="position:absolute; right:15px; top:45px; cursor:pointer;">
+        👁️
+    </span>
+</div>
+
+<!-- Confirm Password -->
+<div class="mb-4 position-relative">
+    <label class="form-label">Confirm Password</label>
+    <input type="password"
+           name="password2"
+           id="password2"
+           class="form-control rounded-3 py-2"
+           style="font-size: 14px;"
+           required>
+    <span onclick="togglePassword('password2', this)"
+          style="position:absolute; right:15px; top:45px; cursor:pointer;">
+        👁️
+    </span>
+</div>
+
+            <button type="submit"
+                    class="btn btn-lg w-100 rounded-3">
+                Register
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <span class="text-muted">Already have an account?</span>
+            <a href="{% url 'login' %}" class="fw-semibold text-decoration-none ms-1">
+                Login
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function togglePassword(fieldId, icon) {
+    const field = document.getElementById(fieldId);
+
+    if (field.type === "password") {
+        field.type = "text";
+        icon.innerHTML = "🙈";
+    } else {
+        field.type = "password";
+        icon.innerHTML = "👁️";
+    }
+}
+</script>
+
+{% endblock %}

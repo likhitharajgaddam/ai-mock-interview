@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+
+/* ===============================
+   RESULT CARD STYLING
+================================ */
+
+.result-card {
+    max-width: 750px;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 16px;
+    padding: 30px;
+    color: #ffffff !important;
+}
+
+/* Make all text white */
+.result-card h1,
+.result-card h2,
+.result-card h3,
+.result-card h4,
+.result-card h5,
+.result-card h6,
+.result-card p,
+.result-card span,
+.result-card small,
+.result-card strong {
+    color: #ffffff !important;
+}
+
+/* Score badge */
+.score-badge {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+
+/* Primary Button */
+.result-primary-btn {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    border: none;
+    color: white !important;
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.result-primary-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* Secondary Button */
+.result-secondary-btn {
+    background: transparent;
+    border: 1px solid rgba(124,58,237,0.5);
+    color: #ffffff !important;
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.result-secondary-btn:hover {
+    background: rgba(124,58,237,0.2);
+    border-color: #7c3aed;
+}
+
+</style>
+
+<div class="d-flex justify-content-center">
+    <div class="result-card shadow-lg">
+
+        <!-- Title -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-2">Interview Completed</h2>
+            <p class="text-muted mb-0">
+                {{ role.name }} Assessment Result
+            </p>
+        </div>
+
+        <!-- Score Section -->
+        <div class="text-center mb-4">
+            <h5 class="text-muted">Total Score</h5>
+            <h1 class="fw-bold display-5 mb-2">
+                {{ percentage }}%
+            </h1>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress mb-4" style="height:12px; border-radius:10px;">
+            <div class="progress-bar"
+             style="background: linear-gradient(90deg,#4f46e5,#7c3aed);"
+                 role="progressbar"
+                 style="width: {{ percentage }}%;">
+            </div>
+        </div>
+
+        <!-- Performance Badge -->
+        <div class="text-center mb-4">
+            {% if percentage >= 80 %}
+                <span class="badge bg-success px-4 py-2 fs-6">
+                    Advanced Level
+                </span>
+            {% elif percentage >= 60 %}
+                <span class="badge bg-warning text-dark px-4 py-2 fs-6">
+                    Intermediate Level
+                </span>
+            {% else %}
+                <span class="badge bg-danger px-4 py-2 fs-6">
+                    Beginner Level
+                </span>
+            {% endif %}
+        </div>
+
+        <hr class="my-4">
+
+<h4 class="fw-bold">Detailed Review</h4>
+
+{% for ans in answers %}
+<div class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <h6 class="fw-bold">Question:</h6>
+        <p>{{ ans.question_text }}</p>
+
+        <h6 class="fw-bold">Your Answer:</h6>
+        <p>{{ ans.response }}</p>
+
+        <h6 class="fw-bold">Score:
+            <span class="badge bg-dark">{{ ans.score }}/10</span>
+        </h6>
+
+        <h6 class="fw-bold mt-2">Feedback:</h6>
+        <p>{{ ans.feedback }}</p>
+    </div>
+</div>
+{% endfor %}
+
+        <!-- Feedback Section -->
+        <div class="mb-4">
+            <h5 class="fw-semibold mb-2">Performance Summary</h5>
+            <p class="text-muted">
+                {% if percentage >= 80 %}
+                    Strong technical understanding with solid practical knowledge.
+                {% elif percentage >= 60 %}
+                    Good understanding, but improvement needed in depth and structure.
+                {% else %}
+                    Basic understanding detected. Focus on core concepts and hands-on practice.
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-grid gap-3 mt-4">
+
+    <a href="{% url 'select_role' %}" 
+       class="result-primary-btn text-center text-decoration-none">
+       Start New Interview
+    </a>
+
+    <a href="{% url 'dashboard' %}" 
+       class="result-secondary-btn text-center text-decoration-none">
+       View Dashboard
+    </a>
+
+</div>
+
+    </div>
+</div>
+
+{% endblock %}

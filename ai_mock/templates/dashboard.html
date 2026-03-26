@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+
+.past-interview-item {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 15px;
+    transition: 0.3s ease;
+    color: #e2e8f0 !important;
+}
+
+/* Hover effect */
+.past-interview-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(124,58,237,0.25);
+}
+
+/* Title text */
+.past-interview-item h6,
+.past-interview-item strong {
+    color: #ffffff !important;
+}
+
+/* Date text */
+.past-interview-item small {
+    color: #94a3b8 !important;
+}
+
+/* Percentage badge */
+.score-badge {
+    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* View Report Button */
+.view-report-btn {
+    background: transparent;
+    border: 1px solid rgba(124,58,237,0.5);
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 6px 14px;
+    transition: 0.3s ease;
+}
+
+.view-report-btn:hover {
+    background: rgba(124,58,237,0.2);
+    border-color: #7c3aed;
+}
+
+</style>
+
+<div class="container">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Performance Dashboard</h2>
+        <p class="text-muted">Track your interview performance over time</p>
+    </div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-5">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 rounded-4 p-4 stat-card">
+            <h6 class="text-muted">Total Interviews</h6>
+            <h2 class="fw-bold">{{ total_interviews }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 rounded-4 p-4 stat-card">
+            <h6 class="text-muted">Average Score</h6>
+            <h2 class="fw-bold">{{ average_score }}%</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 rounded-4 p-4 stat-card text-success">
+            <h6 class="text-muted">Highest Score</h6>
+            <h2 class="fw-bold">{{ highest_score }}%</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 rounded-4 p-4 stat-card text-danger">
+            <h6 class="text-muted">Lowest Score</h6>
+            <h2 class="fw-bold">{{ lowest_score }}%</h2>
+        </div>
+    </div>
+
+</div>
+
+<!-- Performance Level -->
+<div class="card shadow-sm border-0 rounded-4 p-4 mb-5 performance-card">
+    <h6 class="text-muted">Overall Performance Level</h6>
+    <h3 class="fw-bold mb-0">{{ performance_level }}</h3>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
+    <h5 class="fw-semibold mb-3">AI Performance Insight</h5>
+    <p>
+        {% if average_score >= 80 %}
+            Excellent performance. You consistently perform at an advanced level.
+        {% elif average_score >= 50 %}
+            Good progress. Focus on improving weak areas to reach advanced level.
+        {% else %}
+            You're in the learning phase. Review detailed reports to improve faster.
+        {% endif %}
+    </p>
+</div>
+
+    <!-- Chart -->
+    <div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
+        <h5 class="fw-semibold mb-4">Score Progress</h5>
+        <canvas id="scoreChart" height="100"></canvas>
+    </div>
+
+    <!-- Past Interviews -->
+<div class="card shadow-sm border-0 rounded-4 p-4 mt-4 performance-card">
+    <h4 class="fw-bold mb-4 text-white">Past Interviews</h4>
+
+    {% for session in sessions %}
+    <div class="past-interview-item d-flex justify-content-between align-items-center">
+
+        <div>
+            <h6 class="fw-bold mb-1 text-white">
+                {{ session.job_role.name }}
+            </h6>
+            <small>
+                {{ session.created_at|date:"M d, Y • h:i A" }}
+            </small>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+
+            <!-- Score Badge -->
+            <span class="score-badge">
+                {{ session.total_score }}%
+            </span>
+
+            <!-- View Report Button -->
+            <a href="{% url 'session_detail' session.id %}"
+               class="view-report-btn">
+                View Report
+            </a>
+
+        </div>
+
+    </div>
+    {% empty %}
+    <p class="text-muted">No interviews completed yet.</p>
+    {% endfor %}
+</div>
+
+<!-- ChartJS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('scoreChart');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ labels|safe }},
+        datasets: [{
+            data: {{ scores|safe }},
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79,70,229,0.1)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                grid: {
+                    color: "rgba(0,0,0,0.05)"
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}

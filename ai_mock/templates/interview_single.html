@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        <div class="card shadow-lg p-4">
+
+            <h4 class="text-center mb-3">
+                {{ role.name }} Interview
+            </h4>
+
+            <div class="mb-3 text-muted text-center">
+                Question {{ question_number }} of 8
+            </div>
+
+            {% if error %}
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="POST"
+                  action="{% url 'start_interview' role.id %}"
+                  id="answerForm">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        {{ question }}
+                    </label>
+
+                    <textarea name="answer"
+                              id="answerInput"
+                              class="form-control"
+                              rows="4"
+                              required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-dark w-100">
+                    Next Question
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("answerForm");
+    const textarea = document.getElementById("answerInput");
+    const button = form.querySelector("button");
+
+    let submitted = false;
+
+    textarea.addEventListener("keydown", function (event) {
+
+        if (event.key === "Enter" && !event.shiftKey) {
+
+            event.preventDefault();
+
+            if (!submitted) {
+                submitted = true;
+                button.disabled = true;
+                form.submit();
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

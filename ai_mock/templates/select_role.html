@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .role-card {
+    background: rgba(1, 6, 18, 0.96);
+    backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(124, 58, 237, 0.35);
+    border-radius: 18px;
+
+    padding: 25px;
+    transition: 0.3s ease;
+
+    box-shadow:
+        0 0 30px rgba(124,58,237,0.15),
+        inset 0 0 20px rgba(0,0,0,0.6);
+}
+
+.role-card:hover {
+    transform: translateY(-6px);
+    box-shadow:
+        0 0 40px rgba(124,58,237,0.35),
+        inset 0 0 20px rgba(0,0,0,0.6);
+}
+
+.role-card h4 {
+    color: #f1f5f9;
+    font-weight: 600;
+}
+
+.role-card p {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.role-btn {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    border: none;
+    color: white;
+    border-radius: 10px;
+    padding: 10px 20px;
+    transition: 0.3s;
+}
+
+.role-btn:hover {
+    box-shadow: 0 0 20px rgba(124,58,237,0.6);
+    transform: scale(1.03);
+}
+</style>
+
+<div class="d-flex justify-content-center">
+    <div style="max-width:1100px; width:100%;">
+
+        <div class="text-center mb-5">
+            <h2 style="font-weight:600;">Choose Your Interview Role</h2>
+            <p class="text-muted">Select a role to begin your AI mock interview</p>
+        </div>
+
+        <div class="row g-4">
+
+            {% for role in roles %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100 role-card">
+
+                    <div class="card-body d-flex flex-column">
+
+                        <h5 class="fw-semibold mb-3">
+                            {{ role.name }}
+                        </h5>
+
+                        <p class="text-muted flex-grow-1" style="font-size:14px;">
+                            {{ role.description }}
+                        </p>
+
+                        <a href="{% url 'start_interview' role.id %}?restart=true"
+                           class="btn btn-dark w-100 mt-3 rounded-3">
+                            Start Interview
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+</div>
+
+<style>
+.role-card {
+    border-radius: 15px;
+    transition: all 0.25s ease;
+}
+
+.role-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+</style>
+
+{% endblock %}

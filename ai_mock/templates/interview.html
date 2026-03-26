@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.interview-card {
+    background: rgba(15, 23, 42, 0.96);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 16px;
+    box-shadow: 0 0 40px rgba(124,58,237,0.15);
+    color: #ffffff;
+}
+
+.interview-card textarea {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(124,58,237,0.4);
+    color: #ffffff !important;
+}
+
+.progress {
+    background: rgba(30,41,59,0.8);
+    border-radius: 10px;
+    height: 8px;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+}
+.interview-card button {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    border: none;
+    color: #ffffff !important;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.interview-card button:hover {
+    color: #ffffff !important;
+    opacity: 0.95;
+}
+</style>
+
+<div class="d-flex justify-content-center">
+<div class="card interview-card shadow-lg p-4" style="max-width:750px;width:100%;">
+
+    <h4 class="text-center mb-3">
+        {{ role.name }} Interview
+    </h4>
+
+    <!-- Progress -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between mb-2">
+            <span>Progress</span>
+            <span>Question {{ question_number }} of 8</span>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar"
+                 style="width: {{ progress_percentage }}%">
+            </div>
+        </div>
+    </div>
+
+    <!-- Question -->
+    <div class="mb-4">
+        <p style="font-size:18px;font-weight:500;">
+            {{ question }}
+        </p>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <!-- FORM -->
+    <form method="POST" action="{% url 'start_interview' role.id %}" id="answerForm">
+        {% csrf_token %}
+
+        <textarea 
+            name="answer" 
+            id="answerInput"
+            class="form-control mb-3"
+            rows="6"
+            placeholder="Write your answer in detail..."
+            required></textarea>
+
+        <button type="submit" class="btn w-100">
+            Submit Answer
+        </button>
+    </form>
+
+</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("answerForm");
+    const textarea = document.getElementById("answerInput");
+    const button = form.querySelector("button");
+
+    let submitted = false;
+
+    textarea.addEventListener("keydown", function (event) {
+
+        if (event.key === "Enter" && !event.shiftKey) {
+
+            event.preventDefault();
+
+            if (!submitted) {
+                submitted = true;
+                button.disabled = true;
+                form.submit();
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+.login-card {
+    background: rgba(15, 23, 42, 0.96) !important;
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    border: 1px solid rgba(124,58,237,0.35);
+    color: #e2e8f0;
+    position: relative;
+    z-index: 5;
+}
+
+/* Inputs */
+.login-card .form-control {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(124,58,237,0.3);
+    color: #fff;
+}
+
+.login-card .form-control:focus {
+    background: rgba(30, 41, 59, 1);
+    border-color: #7c3aed;
+    box-shadow: 0 0 10px rgba(124,58,237,0.5);
+    color: #fff;
+}
+
+/* Remove bootstrap white */
+.login-card .text-muted {
+    color: #94a3b8 !important;
+}
+</style>
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="card login-card shadow-lg border-0 p-4" style="width: 400px; border-radius: 18px;">
+
+        <div class="text-center mb-4">
+            <h3 class="fw-bold">Welcome Back 👋🏻</h3>
+            <p class="text-muted">Login to continue your mock interview</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            Invalid username or password.
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">
+    <label class="form-label">Username</label>
+    <input type="text"
+           name="username"
+           class="form-control rounded-3"
+           style="font-size:14px; padding:10px 12px;"
+           required>
+</div>
+
+            <div class="mb-3">
+    <label class="form-label">Password</label>
+    <div class="position-relative">
+        <input type="password"
+               name="password"
+               id="password"
+               class="form-control rounded-3 pe-5"
+               style="font-size:14px; padding:10px 12px;"
+               required>
+
+        <span onclick="togglePassword()"
+              style="position:absolute; right:15px; top:50%; transform:translateY(-50%);
+                     cursor:pointer; font-size:16px;">
+            👁
+        </span>
+    </div>
+</div>
+
+            <button type="submit" class="btn btn-dark w-100 btn-lg mt-2">
+                Login
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <small class="text-muted">
+                Don't have an account?
+                <a href="{% url 'register' %}" class="fw-semibold text-decoration-none">
+                    Create one
+                </a>
+            </small>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function togglePassword(fieldId, icon) {
+    const field = document.getElementById(fieldId);
+
+    if (field.type === "password") {
+        field.type = "text";
+        icon.innerHTML = "🙈";
+    } else {
+        field.type = "password";
+        icon.innerHTML = "👁️";
+    }
+}
+</script>
+<script>
+function togglePassword() {
+    const passwordField = document.getElementById("password");
+    passwordField.type = passwordField.type === "password" ? "text" : "password";
+}
+</script>
+
+{% endblock %}

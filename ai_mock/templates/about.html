@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.about-hero {
+    text-align: center;
+    padding: 80px 20px 40px 20px;
+}
+
+.about-hero h1 {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #00d4ff, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.about-hero p {
+    color: #94a3b8;
+    font-size: 18px;
+    margin-top: 15px;
+}
+
+.about-card {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 20px;
+    padding: 50px;
+    margin-top: 40px;
+    box-shadow: 0 0 40px rgba(124,58,237,0.15);
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #e2e8f0;
+}
+
+.feature-list li {
+    margin-bottom: 10px;
+    color: #cbd5e1;
+}
+
+.highlight-box {
+    background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(0,212,255,0.1));
+    padding: 30px;
+    border-radius: 16px;
+    margin-top: 30px;
+    border: 1px solid rgba(124,58,237,0.3);
+}
+</style>
+
+<div class="container">
+
+    <!-- HERO -->
+    <div class="about-hero">
+        <h1>About AI Mock Interview</h1>
+        <p>
+            An AI-powered technical interview simulation platform designed to help
+            students and professionals prepare with real-world precision.
+        </p>
+        <p>Conceptualized and developed by Gaddam Likhitha Raj.</p>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="about-card">
+
+        <!-- Mission -->
+        <div class="mb-5">
+            <div class="section-title">Our Mission</div>
+            <p class="text-light">
+                We aim to bridge the gap between academic preparation and real-world
+                technical interviews by leveraging advanced AI models. Our platform
+                dynamically generates role-specific questions, evaluates responses
+                intelligently, and provides actionable feedback to improve performance.
+            </p>
+        </div>
+
+        <hr style="border-color: rgba(255,255,255,0.1);">
+
+        <!-- How It Works -->
+        <div class="my-5">
+            <div class="section-title">How It Works</div>
+            <ul class="feature-list">
+                <li>AI generates dynamic, role-based interview questions</li>
+                <li>Responses are evaluated using intelligent scoring models</li>
+                <li>Real-time feedback improves conceptual clarity</li>
+                <li>Performance dashboard tracks growth over time</li>
+            </ul>
+        </div>
+
+        <hr style="border-color: rgba(255,255,255,0.1);">
+
+        <!-- Why Different -->
+        <div class="mt-5">
+            <div class="section-title">Why This Platform Stands Out</div>
+
+            <div class="highlight-box">
+                Unlike traditional mock interviews, this system adapts dynamically
+                using AI. Each session is unique. The scoring engine evaluates
+                depth, clarity, and technical relevance — simulating
+                real interview conditions with intelligent feedback loops.
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+
+    <div class="card shadow-lg p-4 mb-4">
+        <h3 class="fw-bold">
+            {{ session.job_role.name }} - Interview Report
+        </h3>
+
+        <p class="text-muted">
+            {{ session.created_at|date:"d M Y, H:i" }}
+        </p>
+
+        <h4>
+            Final Score:
+            <span class="badge bg-dark">
+                {{ session.total_score }}%
+            </span>
+        </h4>
+    </div>
+
+    <h4 class="fw-bold mb-3">Detailed Answer Review</h4>
+
+    {% for ans in answers %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+
+            <h6 class="fw-bold">Question:</h6>
+            <p>{{ ans.question_text }}</p>
+
+            <h6 class="fw-bold">Your Answer:</h6>
+            <p>{{ ans.response }}</p>
+
+            <h6 class="fw-bold">
+                Score:
+                <span class="badge bg-dark">
+                    {{ ans.score }}/10
+                </span>
+            </h6>
+
+            <h6 class="fw-bold mt-2">Feedback:</h6>
+            <p>{{ ans.feedback }}</p>
+
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

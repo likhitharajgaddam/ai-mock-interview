@@ -50,3 +50,6 @@ uritemplate==4.2.0
 urllib3==2.6.3
 websockets==15.0.1
 yarl==1.22.0
+whitenoise==6.8.2
+dj-database-url==0.5.0
+psycopg2-binary==2.9.9

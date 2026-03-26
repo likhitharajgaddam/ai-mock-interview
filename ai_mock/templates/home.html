@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+
+
+/* Hero Layout */
+.hero-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 90vh;
+    padding: 0 10%;
+}
+
+/* Left Card */
+.ai-status {
+    background: rgba(15, 23, 42, 0.95);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid rgba(124,58,237,0.35);
+    width: 320px;
+    box-shadow:
+        0 0 40px rgba(124,58,237,0.25),
+        inset 0 0 30px rgba(0,0,0,0.6);
+}
+
+/* Right Text */
+.hero-content {
+    max-width: 600px;
+    text-align: right;
+}
+
+.hero-title {
+    font-size: 60px;
+    font-weight: bold;
+    background: linear-gradient(45deg, #00d4ff, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+    font-size: 20px;
+    color: #94a3b8;
+}
+
+/* Button */
+.btn-glow {
+    margin-top: 30px;
+    background: linear-gradient(45deg, #7c3aed, #00d4ff);
+    border: none;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-weight: 600;
+    color: white;
+    transition: 0.3s;
+    box-shadow: 0 0 20px rgba(124,58,237,0.4);
+}
+
+.btn-glow:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(124,58,237,0.8);
+}
+
+/* Stats Section */
+.stats-grid {
+    display: flex;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.mini-card {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(124,58,237,0.25);
+    transition: 0.3s;
+}
+
+.mini-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 0 20px rgba(124,58,237,0.4);
+}
+
+/* AI Orb */
+.ai-orb {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #7c3aed, #00d4ff);
+    box-shadow: 0 0 30px #7c3aed;
+    animation: pulse 2s infinite;
+}
+
+
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.btn-glow {
+    text-decoration: none !important;
+}
+
+/* ===== Terminal Styling ===== */
+
+.terminal {
+    background: #000000;
+    color: #00ff88;
+    font-family: "Courier New", monospace;
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 15px;
+    font-size: 13px;
+    box-shadow: inset 0 0 15px rgba(0,255,136,0.2);
+}
+
+.terminal p {
+    margin: 0;
+    color: #39ff14 !important;
+}
+</style>
+
+<div class="hero-container">
+
+    <!-- LEFT SIDE -->
+    <div class="ai-status">
+        <h4>AI System Status</h4>
+        <p>Model: LLM-3.3</p>
+        <p>Scoring Engine: Active</p>
+        <p>Latency: 42ms ⚡</p>
+        <div class="terminal mt-3">
+          <p class="type-line" >> Initializing AI...</p>
+          <p class="type-line">> Loading Interview Modules...</p>
+          <p class="type-line">> Ready.</p>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="hero-content">
+        <h1 class="hero-title">AI Mock Interview</h1>
+        <p class="hero-sub">Simulating Intelligent Technical Interviews...</p>
+
+        <a href="{% url 'select_role' %}" class="btn-glow text-decoration-none">
+          Start Interview
+        </a>
+
+        <div class="stats-grid">
+            <div class="mini-card">
+                <h4>12+</h4>
+                <p>Job Roles</p>
+            </div>
+
+            <div class="mini-card">
+                <h4>AI Powered</h4>
+                <p>Dynamic Questions</p>
+            </div>
+
+            <div class="mini-card">
+                <h4>Real-time</h4>
+                <p>Smart Scoring</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}
