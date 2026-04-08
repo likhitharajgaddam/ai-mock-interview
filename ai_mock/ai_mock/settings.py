@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'users',
     'interviews',
     'dashboard',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'ai_mock.middleware.AutoLogoutMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = 'ai_mock.urls'
@@ -138,3 +140,4 @@ LOGOUT_REDIRECT_URL = 'login'
 X_FRAME_OPTIONS = 'ALLOWALL'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
+CORS_ALLOW_ALL_ORIGINS = True
