@@ -51,7 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'ai_mock.middleware.AutoLogoutMiddleware',
+    # 'ai_mock.middleware.AutoLogoutMiddleware',
+    'ai_mock.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'ai_mock.urls'
@@ -137,3 +138,11 @@ LOGOUT_REDIRECT_URL = 'login'
 
 X_FRAME_OPTIONS = 'ALLOWALL'
 
+class CSPMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response['Content-Security-Policy'] = "frame-ancestors *"
+        return response
