@@ -188,18 +188,41 @@ Return only numbered questions.
         )
 
 def generate_ai_question(request):
-    role_name = request.GET.get("role", "Software Developer")
+    return JsonResponse({"message": "API working"})
+
+    prompt = f"""
+Generate {count} different advanced technical interview questions.
+
+Role: {role.name}
+Description: {role.description}
+
+Return only numbered questions.
+"""
 
     try:
-        role = JobRole.objects.get(name=role_name)
-    except:
-        return JsonResponse({
-            "questions": FALLBACK_QUESTIONS["Software Developer"]
-        })
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.9
+        )
 
-    questions = generate_ai_questions_logic(role)
+        text = response.choices[0].message.content.strip()
 
-    return JsonResponse({"questions": questions})
+        questions = []
+        for line in text.split("\n"):
+            line = line.strip()
+            if line:
+                line = line.split(". ", 1)[-1]
+                questions.append(line)
+
+        return questions[:count]
+
+    except Exception as e:
+        print("Groq Error:", e)
+        return FALLBACK_QUESTIONS.get(role.name, random.choice(list(FALLBACK_QUESTIONS.values())))
+    
 
 
 @never_cache
@@ -256,7 +279,7 @@ def start_interview(request, role_id):
     # Initialize only if session doesn't exist
     if session_key not in request.session:
         try:
-            questions = generate_ai_questions_logic(role, MAX_QUESTIONS)
+            questions = generate_ai_question(role, MAX_QUESTIONS)
             random.shuffle(questions)
         except Exception:
             questions = FALLBACK_QUESTIONS.get(

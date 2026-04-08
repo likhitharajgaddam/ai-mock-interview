@@ -8,7 +8,6 @@ import os
 import random
 from django.views.decorators.cache import never_cache
 from groq import Groq
-from django.http import JsonResponse
 
 MAX_QUESTIONS = 8
 FALLBACK_QUESTIONS = {
@@ -150,7 +149,11 @@ groq_api_key = os.environ.get("GROQ_API_KEY", "")
 groq_client = Groq(api_key=groq_api_key)
 
 
-def generate_ai_questions_logic(role, count=8):
+
+
+def generate_ai_question(request):
+    return JsonResponse({"message": "API working"})
+
     prompt = f"""
 Generate {count} different advanced technical interview questions.
 
@@ -182,24 +185,8 @@ Return only numbered questions.
 
     except Exception as e:
         print("Groq Error:", e)
-        return FALLBACK_QUESTIONS.get(
-            role.name,
-            random.choice(list(FALLBACK_QUESTIONS.values()))
-        )
-
-def generate_ai_question(request):
-    role_name = request.GET.get("role", "Software Developer")
-
-    try:
-        role = JobRole.objects.get(name=role_name)
-    except:
-        return JsonResponse({
-            "questions": FALLBACK_QUESTIONS["Software Developer"]
-        })
-
-    questions = generate_ai_questions_logic(role)
-
-    return JsonResponse({"questions": questions})
+        return FALLBACK_QUESTIONS.get(role.name, random.choice(list(FALLBACK_QUESTIONS.values())))
+    
 
 
 @never_cache
@@ -256,7 +243,7 @@ def start_interview(request, role_id):
     # Initialize only if session doesn't exist
     if session_key not in request.session:
         try:
-            questions = generate_ai_questions_logic(role, MAX_QUESTIONS)
+            questions = generate_ai_question(role, MAX_QUESTIONS)
             random.shuffle(questions)
         except Exception:
             questions = FALLBACK_QUESTIONS.get(

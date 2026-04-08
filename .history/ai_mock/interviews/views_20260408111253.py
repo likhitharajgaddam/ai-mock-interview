@@ -256,7 +256,7 @@ def start_interview(request, role_id):
     # Initialize only if session doesn't exist
     if session_key not in request.session:
         try:
-            questions = generate_ai_questions_logic(role, MAX_QUESTIONS)
+            questions = generate_ai_question(role, MAX_QUESTIONS)
             random.shuffle(questions)
         except Exception:
             questions = FALLBACK_QUESTIONS.get(
