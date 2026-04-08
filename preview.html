@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Mock Interview - UI Preview</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
+
     <style>
         /* Sleek black and neon-blue dark theme */
         :root {
@@ -39,8 +40,11 @@
         /* Animated Background Orbs and Grid */
         .background-grid {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: 
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
                 linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
@@ -56,21 +60,30 @@
         }
 
         .orb-1 {
-            width: 300px; height: 300px;
+            width: 300px;
+            height: 300px;
             background: rgba(0, 243, 255, 0.15);
-            top: -50px; left: -50px;
+            top: -50px;
+            left: -50px;
         }
 
         .orb-2 {
-            width: 400px; height: 400px;
+            width: 400px;
+            height: 400px;
             background: rgba(0, 102, 255, 0.1);
-            bottom: -100px; right: -100px;
+            bottom: -100px;
+            right: -100px;
             animation-delay: -5s;
         }
 
         @keyframes float {
-            0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(50px) scale(1.1); }
+            0% {
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                transform: translateY(50px) scale(1.1);
+            }
         }
 
         /* App Container */
@@ -127,7 +140,9 @@
         .glass-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 1px;
             background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
             opacity: 0;
@@ -209,44 +224,85 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(0,243,255,0.5); }
-            50% { opacity: 0.5; text-shadow: none; }
+
+            0%,
+            100% {
+                opacity: 1;
+                text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            }
+
+            50% {
+                opacity: 0.5;
+                text-shadow: none;
+            }
         }
 
         @keyframes fadeIn {
-            to { opacity: 1; transform: translateY(0); }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Staggered animations */
-        .glass-card:nth-child(1) { animation-delay: 0.1s; }
-        .glass-card:nth-child(2) { animation-delay: 0.2s; }
-        .glass-card:nth-child(3) { animation-delay: 0.3s; }
-        .glass-card:nth-child(4) { animation-delay: 0.4s; }
-        .glass-card:nth-child(5) { animation-delay: 0.5s; }
-        .glass-card:nth-child(6) { animation-delay: 0.6s; }
-        .glass-card:nth-child(7) { animation-delay: 0.7s; }
-        .glass-card:nth-child(8) { animation-delay: 0.8s; }
-        
+        .glass-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .glass-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .glass-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .glass-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .glass-card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .glass-card:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+        .glass-card:nth-child(7) {
+            animation-delay: 0.7s;
+        }
+
+        .glass-card:nth-child(8) {
+            animation-delay: 0.8s;
+        }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
             background: var(--bg-color);
         }
+
         ::-webkit-scrollbar-thumb {
             background: rgba(0, 243, 255, 0.3);
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 243, 255, 0.6);
         }
     </style>
 </head>
+
 <body>
     <div class="background-grid"></div>
     <div class="orb orb-1"></div>
@@ -257,7 +313,7 @@
     <!-- React and ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
+
     <!-- Babel for in-browser JSX parsing -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
@@ -276,27 +332,16 @@
                     try {
                         // Using AllOrigins CORS proxy to handle CORS issues gracefully
                         // The backend might not have django-cors-headers installed or it may take time to spin up
-                        const targetUrl = 'https://ai-mock-interview-2-y4q1.onrender.com/interview/api/questions/?role=Software%20Developer';
-                        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-                        
-                        const response = await fetch(proxyUrl);
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        
+                        const response = await fetch(
+                            "https://ai-mock-interview-2-y4q1.onrender.com/interview/api/questions/?role=Software%20Developer"
+                        );
+
                         const data = await response.json();
-                        
-                        // allorigins returns the actual JSON payload inside 'contents' as a string
-                        if (data.contents) {
-                            const parsed = JSON.parse(data.contents);
-                            if (parsed && parsed.questions) {
-                                setQuestions(parsed.questions);
-                            } else {
-                                throw new Error("Invalid data structure received");
-                            }
+
+                        if (data && data.questions) {
+                            setQuestions(data.questions);
                         } else {
-                            throw new Error("No contents received from API");
+                            throw new Error("Invalid data");
                         }
                     } catch (err) {
                         console.error("Fetch error:", err);
@@ -329,8 +374,8 @@
                             <div className="error-icon">⚠️</div>
                             <h3 className="error-title">Connection Error</h3>
                             <p className="error-message">{error}</p>
-                            <button 
-                                onClick={() => window.location.reload()} 
+                            <button
+                                onClick={() => window.location.reload()}
                                 style={{
                                     marginTop: '1.5rem',
                                     padding: '10px 24px',
@@ -360,9 +405,9 @@
                             ))}
                         </div>
                     )}
-                    
+
                     {!loading && !error && questions.length === 0 && (
-                        <div className="glass-card" style={{textAlign: 'center', color: 'gray'}}>
+                        <div className="glass-card" style={{ textAlign: 'center', color: 'gray' }}>
                             No questions returned.
                         </div>
                     )}
@@ -374,4 +419,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
