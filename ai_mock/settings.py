@@ -27,6 +27,12 @@ DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
+# Railway CSRF domains
+import os
+CSRF_TRUSTED_ORIGINS = ["https://*.railway.app", "https://*.up.railway.app"]
+if 'RAILWAY_PUBLIC_DOMAIN' in os.environ:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ['RAILWAY_PUBLIC_DOMAIN']}")
+
 
 # Application definition
 
