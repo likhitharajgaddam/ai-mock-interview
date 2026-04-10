@@ -1,1 +1,1 @@
-web: gunicorn ai_mock.wsgi:application
+web: gunicorn ai_mock.ai_mock.wsgi:application
