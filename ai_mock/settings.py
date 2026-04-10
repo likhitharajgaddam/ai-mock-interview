@@ -25,13 +25,14 @@ SECRET_KEY = 'django-insecure-36an!(#0&^^3)#-d-q^iw4yb1i-t8$zl(^xdq1&$rf+b_(j^6-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*", "0.0.0.0", "127.0.0.1", "localhost", ".railway.app"]
 
 # Railway CSRF domains
 import os
 CSRF_TRUSTED_ORIGINS = ["https://*.railway.app", "https://*.up.railway.app"]
 if 'RAILWAY_PUBLIC_DOMAIN' in os.environ:
     CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ['RAILWAY_PUBLIC_DOMAIN']}")
+    ALLOWED_HOSTS.append(os.environ['RAILWAY_PUBLIC_DOMAIN'])
 
 
 # Application definition
@@ -136,6 +137,8 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    WHITENOISE_USE_FINDERS = True
+    WHITENOISE_MANIFEST_STRICT = False
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'select_role'

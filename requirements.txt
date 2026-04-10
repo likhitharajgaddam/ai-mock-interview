@@ -4,4 +4,5 @@ whitenoise==6.6.0
 psycopg2-binary==2.9.9
 dj-database-url==0.5.0
 django-cors-headers==4.3.1
-groq>=0.4.0
+groq==0.5.0
+whitenoise[brotli]==6.6.0
