@@ -146,8 +146,12 @@ FALLBACK_QUESTIONS = {
     ],
 }
 
-groq_api_key = os.environ.get("GROQ_API_KEY", "")
-groq_client = Groq(api_key=groq_api_key)
+groq_api_key = os.environ.get("GROQ_API_KEY")
+if groq_api_key:
+    groq_client = Groq(api_key=groq_api_key)
+else:
+    groq_client = None
+    print("WARNING: GROQ_API_KEY not found in environment. AI features will fallback to default questions.")
 
 
 def generate_ai_questions_logic(role, count=8):
