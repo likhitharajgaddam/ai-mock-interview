@@ -58,10 +58,20 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'ai_mock.middleware.AutoLogoutMiddleware',
     "corsheaders.middleware.CorsMiddleware",
 ]
+
+# Security settings for Portfolio Previews
+X_FRAME_OPTIONS = 'ALLOWALL' 
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
 
 ROOT_URLCONF = 'ai_mock.urls'
 
@@ -140,13 +150,7 @@ if not DEBUG:
     WHITENOISE_USE_FINDERS = True
     WHITENOISE_MANIFEST_STRICT = False
 
+# Login/Logout configuration
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'select_role'
 LOGOUT_REDIRECT_URL = 'login'
-
-
-
-X_FRAME_OPTIONS = 'ALLOWALL'
-SECURE_CROSS_ORIGIN_OPENER_POLICY = None
-
-CORS_ALLOW_ALL_ORIGINS = True
