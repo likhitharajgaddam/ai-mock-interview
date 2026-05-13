@@ -1,244 +1,272 @@
 {% extends 'base.html' %}
 {% block content %}
-
 <style>
-/* ── Interview card ─────────────────────────────────────── */
-.interview-wrap {
-    max-width: 760px;
-    width: 100%;
-    margin: 0 auto;
+/* ─── Layout ──────────────────────────────────────────────────── */
+.iw { max-width: 760px; width: 100%; margin: 0 auto; }
+
+/* ─── Main card ───────────────────────────────────────────────── */
+.i-card {
+    background: rgba(10,14,28,0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(124,58,237,0.28);
+    border-radius: 22px;
+    padding: 32px;
+    box-shadow: 0 0 80px rgba(124,58,237,0.1), 0 24px 48px rgba(0,0,0,0.5);
 }
 
-.interview-card {
-    background: rgba(13, 18, 36, 0.97);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(124,58,237,0.3);
-    border-radius: 20px;
-    box-shadow: 0 0 60px rgba(124,58,237,0.12), 0 20px 40px rgba(0,0,0,0.4);
-    padding: 36px;
-    color: #ffffff;
-    transition: box-shadow 0.3s ease;
+/* ─── Top bar: AI + XP ────────────────────────────────────────── */
+.top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px; gap: 12px;
 }
-
-/* ── AI interviewer bar ─────────────────────────────────── */
-.ai-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.ai-persona {
+    display: flex; align-items: center; gap: 10px;
     background: rgba(79,70,229,0.1);
     border: 1px solid rgba(124,58,237,0.2);
-    border-radius: 12px;
-    padding: 10px 16px;
-    margin-bottom: 24px;
+    border-radius: 12px; padding: 8px 14px;
+    flex: 1;
 }
-.ai-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
+.ai-ava {
+    width: 34px; height: 34px; border-radius: 50%;
     background: linear-gradient(135deg,#4f46e5,#7c3aed);
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px; flex-shrink: 0;
-    box-shadow: 0 0 12px rgba(124,58,237,0.5);
+    font-size: 15px; flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(124,58,237,0.5);
+    animation: pulse-ava 3s infinite;
 }
-.ai-label { font-size: 13px; color: #a78bfa !important; font-weight: 600; }
-.ai-status { font-size: 12px; color: #64748b !important; }
+@keyframes pulse-ava {
+    0%,100% { box-shadow: 0 0 10px rgba(124,58,237,0.5); }
+    50%      { box-shadow: 0 0 20px rgba(124,58,237,0.8); }
+}
+.ai-name  { font-size: 13px; font-weight: 700; color: #a78bfa !important; }
+.ai-role  { font-size: 11px; color: #475569 !important; }
 
-/* ── Progress ───────────────────────────────────────────── */
-.progress-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+/* XP counter */
+.xp-counter {
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 12px; padding: 8px 14px;
+    text-align: center; flex-shrink: 0;
 }
-.progress-label { font-size: 13px; color: #94a3b8 !important; }
-.q-counter {
-    font-size: 13px; font-weight: 700;
-    color: #a78bfa !important;
-    background: rgba(124,58,237,0.15);
+.xp-val { font-size: 16px; font-weight: 900; color: #fcd34d !important; }
+.xp-lbl { font-size: 10px; color: #78716c !important; letter-spacing: 0.5px; }
+
+/* ─── Level + progress ────────────────────────────────────────── */
+.level-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+}
+.level-badge-sm {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
     padding: 3px 10px; border-radius: 20px;
 }
-.progress-track {
-    height: 6px;
-    background: rgba(30,41,59,0.8);
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 28px;
+.lvl-easy   { background: rgba(16,185,129,0.15); color: #6ee7b7 !important; border: 1px solid rgba(16,185,129,0.3); }
+.lvl-medium { background: rgba(245,158,11,0.15);  color: #fcd34d !important; border: 1px solid rgba(245,158,11,0.3); }
+.lvl-hard   { background: rgba(239,68,68,0.15);   color: #fca5a5 !important; border: 1px solid rgba(239,68,68,0.3); }
+.q-counter-sm { font-size: 12px; font-weight: 700; color: #6366f1 !important; }
+
+.prog-track {
+    height: 6px; background: rgba(30,41,59,0.8);
+    border-radius: 6px; overflow: hidden; margin-bottom: 24px;
 }
-.progress-fill {
-    height: 100%;
+.prog-fill {
+    height: 100%; border-radius: 6px;
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
-    border-radius: 6px;
-    transition: width 0.6s ease;
+    transition: width 0.7s ease;
+    position: relative;
+}
+.prog-fill::after {
+    content: "";
+    position: absolute; right: 0; top: 0; bottom: 0; width: 6px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 3px;
+    animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+/* ─── AI reaction bubble ──────────────────────────────────────── */
+.ai-reaction {
+    background: rgba(79,70,229,0.08);
+    border: 1px solid rgba(124,58,237,0.18);
+    border-radius: 0 14px 14px 14px;
+    padding: 10px 14px; margin-bottom: 18px;
+    font-size: 13px; font-style: italic;
+    color: #94a3b8 !important;
+    position: relative;
+}
+.ai-reaction::before {
+    content: "🤖";
+    position: absolute; top: -10px; left: -2px;
+    font-size: 16px; font-style: normal;
 }
 
-/* ── Difficulty badge ───────────────────────────────────── */
-.diff-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-bottom: 14px;
-}
-.diff-easy   { background: rgba(16,185,129,0.15); color: #6ee7b7 !important; border: 1px solid rgba(16,185,129,0.3); }
-.diff-medium { background: rgba(245,158,11,0.15);  color: #fcd34d !important; border: 1px solid rgba(245,158,11,0.3); }
-.diff-hard   { background: rgba(239,68,68,0.15);   color: #fca5a5 !important; border: 1px solid rgba(239,68,68,0.3); }
-
-/* ── Question text ──────────────────────────────────────── */
-.question-box {
-    background: rgba(30,41,59,0.5);
+/* ─── Question box ────────────────────────────────────────────── */
+.q-box {
+    background: rgba(20,28,50,0.7);
     border-left: 3px solid #7c3aed;
-    border-radius: 0 10px 10px 0;
-    padding: 16px 20px;
-    margin-bottom: 24px;
+    border-radius: 0 12px 12px 0;
+    padding: 18px 20px; margin-bottom: 22px;
 }
-.question-text {
-    font-size: 18px;
-    font-weight: 600;
-    color: #f1f5f9 !important;
-    line-height: 1.5;
-    margin: 0;
-}
+.q-text { font-size: 18px; font-weight: 700; color: #f1f5f9 !important; line-height: 1.5; margin: 0; }
 
-/* ── Textarea ───────────────────────────────────────────── */
-.answer-textarea {
-    background: rgba(15,23,42,0.9) !important;
-    border: 1px solid rgba(124,58,237,0.35) !important;
-    border-radius: 12px !important;
-    color: #e2e8f0 !important;
-    font-size: 15px;
-    line-height: 1.6;
-    resize: vertical;
-    transition: border-color 0.2s, box-shadow 0.2s;
+/* ─── Textarea ────────────────────────────────────────────────── */
+.ans-ta {
+    background: rgba(8,12,24,0.9) !important;
+    border: 1px solid rgba(124,58,237,0.3) !important;
+    border-radius: 14px !important;
+    color: #e2e8f0 !important; font-size: 15px;
+    line-height: 1.7; resize: vertical;
     padding: 14px 16px !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
-.answer-textarea:focus {
+.ans-ta:focus {
     border-color: #7c3aed !important;
-    box-shadow: 0 0 0 3px rgba(124,58,237,0.2) !important;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.18) !important;
     outline: none;
 }
-.answer-textarea::placeholder { color: #475569 !important; }
+.ans-ta::placeholder { color: #334155 !important; }
 
-/* ── Submit button ──────────────────────────────────────── */
-.submit-btn {
+/* ─── Submit button ───────────────────────────────────────────── */
+.sub-btn {
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
-    border: none;
-    border-radius: 12px;
-    color: #fff !important;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 14px;
-    width: 100%;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.2s;
+    border: none; border-radius: 14px;
+    color: #fff !important; font-weight: 800; font-size: 15px;
+    padding: 15px; width: 100%; cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
     letter-spacing: 0.3px;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.3);
 }
-.submit-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
-.submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.sub-btn:hover:not(:disabled) {
+    opacity: 0.92; transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(124,58,237,0.5);
+}
+.sub-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* ── AI thinking overlay ────────────────────────────────── */
+/* ─── AI thinking ─────────────────────────────────────────────── */
 #ai-thinking {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: rgba(79,70,229,0.12);
-    border: 1px solid rgba(124,58,237,0.25);
-    border-radius: 12px;
-    padding: 14px;
-    margin-top: 12px;
-    font-size: 14px;
-    color: #a78bfa !important;
+    display: none; align-items: center; justify-content: center; gap: 10px;
+    background: rgba(79,70,229,0.1); border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 12px; padding: 14px; margin-top: 12px;
+    font-size: 14px; color: #a78bfa !important;
 }
-.dot-pulse { display: flex; gap: 5px; }
-.dot-pulse span {
-    width: 7px; height: 7px;
-    background: #7c3aed;
-    border-radius: 50%;
-    animation: dp 1.2s infinite ease-in-out;
+.dots { display: flex; gap: 5px; }
+.dots span {
+    width: 7px; height: 7px; background: #7c3aed;
+    border-radius: 50%; animation: dp 1.2s infinite ease-in-out;
 }
-.dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
-.dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes dp {
-    0%,80%,100% { transform: scale(0.6); opacity: 0.4; }
-    40%          { transform: scale(1);   opacity: 1; }
-}
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dp { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
 
-/* ── Hint ───────────────────────────────────────────────── */
-.hint-text {
-    font-size: 12px;
-    color: #475569 !important;
-    text-align: center;
-    margin-top: 10px;
+/* ─── XP burst popup ──────────────────────────────────────────── */
+.xp-burst {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg,#4f46e5,#7c3aed);
+    border-radius: 20px; padding: 20px 32px;
+    text-align: center; z-index: 9999;
+    box-shadow: 0 0 60px rgba(124,58,237,0.6);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+    opacity: 0; pointer-events: none;
 }
+.xp-burst.show { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+.xp-burst .big { font-size: 32px; font-weight: 900; color: #fcd34d !important; }
+.xp-burst .sub { font-size: 14px; color: rgba(255,255,255,0.8) !important; margin-top: 4px; }
+
+.hint { font-size: 12px; color: #334155 !important; text-align: center; margin-top: 10px; }
 </style>
 
-<div class="interview-wrap">
-<div class="interview-card">
+<!-- XP burst popup -->
+<div class="xp-burst" id="xpBurst">
+    <div class="big">+<span id="xpAmount">50</span> XP</div>
+    <div class="sub">Answer submitted!</div>
+</div>
 
-    <!-- AI Interviewer bar -->
-    <div class="ai-bar">
-        <div class="ai-avatar">🤖</div>
-        <div>
-            <div class="ai-label">AI Interviewer</div>
-            <div class="ai-status">{{ role.name }} Technical Round</div>
+<div class="iw">
+<div class="i-card">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+        <div class="ai-persona">
+            <div class="ai-ava">🤖</div>
+            <div>
+                <div class="ai-name">AI Interviewer</div>
+                <div class="ai-role">{{ role.name }} · Technical Round</div>
+            </div>
+        </div>
+        <div class="xp-counter">
+            <div class="xp-val">{{ xp_so_far }}</div>
+            <div class="xp-lbl">XP EARNED</div>
         </div>
     </div>
 
-    <!-- Progress -->
-    <div class="progress-row">
-        <span class="progress-label">Progress</span>
-        <span class="q-counter">{{ question_number }} / {{ max_questions }}</span>
+    <!-- Level + progress -->
+    <div class="level-row">
+        {% if question_number <= 2 %}
+            <span class="level-badge-sm lvl-easy">⚡ LEVEL 1 — BASICS</span>
+        {% elif question_number <= 4 %}
+            <span class="level-badge-sm lvl-medium">🔥 LEVEL 2 — INTERMEDIATE</span>
+        {% elif question_number <= 6 %}
+            <span class="level-badge-sm lvl-medium">💡 LEVEL 3 — ADVANCED</span>
+        {% else %}
+            <span class="level-badge-sm lvl-hard">🏆 LEVEL 4 — EXPERT</span>
+        {% endif %}
+        <span class="q-counter-sm">{{ question_number }} / {{ max_questions }}</span>
     </div>
-    <div class="progress-track">
-        <div class="progress-fill" style="width:{{ progress_percentage }}%"></div>
+    <div class="prog-track">
+        <div class="prog-fill" style="width:{{ progress_percentage }}%"></div>
     </div>
 
-    <!-- Difficulty badge -->
-    {% if question_number <= 2 %}
-        <span class="diff-badge diff-easy">EASY</span>
-    {% elif question_number <= 5 %}
-        <span class="diff-badge diff-medium">MEDIUM</span>
-    {% else %}
-        <span class="diff-badge diff-hard">HARD</span>
-    {% endif %}
+    <!-- AI reaction (contextual per question number) -->
+    <div class="ai-reaction">
+        {% if question_number == 1 %}
+            "Welcome! Let's start with something straightforward."
+        {% elif question_number == 2 %}
+            "Good start. Let's keep going."
+        {% elif question_number == 3 %}
+            "Interesting. Now let's test your depth."
+        {% elif question_number == 4 %}
+            "We're halfway through. Stay focused."
+        {% elif question_number == 5 %}
+            "You're doing well. Let's push further."
+        {% elif question_number == 6 %}
+            "Almost there. These next ones are tougher."
+        {% elif question_number == 7 %}
+            "Second to last. Give it your best."
+        {% else %}
+            "Final question. Make it count."
+        {% endif %}
+    </div>
 
     <!-- Question -->
-    <div class="question-box">
-        <p class="question-text">{{ question }}</p>
+    <div class="q-box">
+        <p class="q-text">{{ question }}</p>
     </div>
 
     {% if error %}
-    <div class="alert alert-danger rounded-3 mb-3" style="font-size:14px;">
-        {{ error }}
-    </div>
+    <div class="alert alert-danger rounded-3 mb-3" style="font-size:14px;">{{ error }}</div>
     {% endif %}
 
-    <!-- Answer form -->
+    <!-- Form -->
     <form method="POST" action="{% url 'start_interview' role.id %}" id="answerForm">
         {% csrf_token %}
-
         <textarea
-            name="answer"
-            id="answerInput"
-            class="form-control answer-textarea mb-3"
+            name="answer" id="answerInput"
+            class="form-control ans-ta mb-3"
             rows="6"
-            placeholder="Type your answer here… (Shift+Enter for new line, Enter to submit)"
+            placeholder="Type your answer here…"
             required></textarea>
 
-        <button type="submit" class="submit-btn" id="submitBtn">
+        <button type="submit" class="sub-btn" id="submitBtn">
             Submit Answer →
         </button>
 
-        <!-- AI thinking animation (shown after submit) -->
         <div id="ai-thinking">
-            <div class="dot-pulse">
-                <span></span><span></span><span></span>
-            </div>
-            <span>AI is analysing your response…</span>
+            <div class="dots"><span></span><span></span><span></span></div>
+            <span>AI is evaluating your response…</span>
         </div>
 
-        <p class="hint-text">Press Enter to submit · Shift+Enter for new line</p>
+        <p class="hint">Enter to submit · Shift+Enter for new line</p>
     </form>
 
 </div>
@@ -247,38 +275,46 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     var form     = document.getElementById("answerForm");
-    var textarea = document.getElementById("answerInput");
+    var ta       = document.getElementById("answerInput");
     var btn      = document.getElementById("submitBtn");
     var thinking = document.getElementById("ai-thinking");
+    var burst    = document.getElementById("xpBurst");
+    var xpAmt    = document.getElementById("xpAmount");
 
-    // Clear autofill + focus
-    textarea.value = "";
-    textarea.focus();
+    ta.value = "";
+    ta.focus();
 
     var submitted = false;
 
-    function doSubmit() {
-        if (submitted) return;
-        if (textarea.value.trim().length === 0) return;
-        submitted = true;
-        btn.disabled = true;
-        btn.textContent = "Submitting…";
-        thinking.style.display = "flex";
-        form.submit();
+    function showBurst() {
+        /* XP per question increases with level */
+        var qn  = {{ question_number }};
+        var xp  = qn <= 2 ? 50 : qn <= 4 ? 75 : qn <= 6 ? 100 : 125;
+        xpAmt.textContent = xp;
+        burst.classList.add("show");
+        setTimeout(function () { burst.classList.remove("show"); }, 1200);
     }
 
-    textarea.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            doSubmit();
-        }
-    });
+    function doSubmit() {
+        if (submitted) return;
+        if (ta.value.trim().length === 0) return;
+        submitted = true;
+        showBurst();
+        setTimeout(function () {
+            btn.disabled = true;
+            btn.textContent = "Evaluating…";
+            thinking.style.display = "flex";
+            form.submit();
+        }, 600);
+    }
 
+    ta.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doSubmit(); }
+    });
     form.addEventListener("submit", function (e) {
         if (submitted) { e.preventDefault(); return; }
         doSubmit();
     });
 });
 </script>
-
 {% endblock %}

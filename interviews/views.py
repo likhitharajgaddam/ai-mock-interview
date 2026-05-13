@@ -473,11 +473,17 @@ def start_interview(request, role_id):
 
     # ---- GET — show question ----
     progress = int(((question_number - 1) / MAX_QUESTIONS) * 100)
+    # XP earned so far in this session (50/75/100/125 per question tier)
+    xp_so_far = 0
+    for i in range(question_number - 1):
+        xp_so_far += 50 if i < 2 else 75 if i < 4 else 100 if i < 6 else 125
     return render(request, "interview.html", {
         "role":                role,
         "question":            question,
         "question_number":     question_number,
         "progress_percentage": progress,
+        "max_questions":       MAX_QUESTIONS,
+        "xp_so_far":           xp_so_far,
     })
 
 
@@ -488,12 +494,19 @@ def interview_result(request, session_id):
     # Pre-compute SVG ring offset: circumference = 2*pi*56 = 351.9
     circumference = 351.9
     ring_offset = round(circumference - (session.total_score / 100) * circumference, 1)
+    # XP earned: sum of per-question XP based on tier
+    xp_earned = 0
+    for i in range(8):
+        xp_earned += 50 if i < 2 else 75 if i < 4 else 100 if i < 6 else 125
+    # Scale by score percentage
+    xp_earned = int(xp_earned * session.total_score / 100)
     return render(request, "result.html", {
         "role":        session.job_role,
         "session":     session,
         "percentage":  session.total_score,
         "answers":     answers,
         "ring_offset": ring_offset,
+        "xp_earned":   xp_earned,
     })
 
 

@@ -186,6 +186,30 @@
 
 <!-- ── HEADER + SCORE ──────────────────────────────────────────── -->
 <div class="glass">
+
+    <!-- XP + Badges earned row -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+        <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:12px;padding:8px 16px;text-align:center;">
+            <div style="font-size:20px;font-weight:900;color:#fcd34d !important;">+{{ xp_earned }} XP</div>
+            <div style="font-size:10px;color:#78716c !important;letter-spacing:0.5px;">EARNED THIS SESSION</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            {% if percentage >= 80 %}
+                <span style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:#6ee7b7 !important;">🏆 Expert</span>
+            {% elif percentage >= 60 %}
+                <span style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:#fcd34d !important;">⭐ Skilled</span>
+            {% else %}
+                <span style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:#a5b4fc !important;">🌱 Explorer</span>
+            {% endif %}
+            {% if percentage >= 70 %}
+                <span style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:#7dd3fc !important;">🎯 Problem Solver</span>
+            {% endif %}
+            {% if percentage == 100 %}
+                <span style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:#fde68a !important;">👑 Perfect Score</span>
+            {% endif %}
+        </div>
+    </div>
+
     <div class="text-center mb-4">
         <p style="font-size:11px;letter-spacing:1.5px;color:#6366f1 !important;margin-bottom:6px;">TECHNICAL ASSESSMENT REPORT</p>
         <h2 class="fw-bold mb-1">{{ role.name }}</h2>
