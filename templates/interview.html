@@ -178,8 +178,14 @@
 
 <!-- XP burst popup -->
 <div class="xp-burst" id="xpBurst">
-    <div class="big">+<span id="xpAmount">50</span> XP</div>
-    <div class="sub">Answer submitted!</div>
+    <div class="big" id="xpBurstMain">+<span id="xpAmount">0</span> XP</div>
+    <div class="sub" id="xpBurstSub">Answer submitted!</div>
+</div>
+
+<!-- No-XP popup (poor answer) -->
+<div class="xp-burst" id="noXpBurst" style="background:linear-gradient(135deg,#1e293b,#334155);">
+    <div class="big" style="font-size:24px;">😐 +0 XP</div>
+    <div class="sub">Answer needs more depth</div>
 </div>
 
 <div class="iw">
@@ -195,8 +201,8 @@
             </div>
         </div>
         <div class="xp-counter">
-            <div class="xp-val">{{ xp_so_far }}</div>
-            <div class="xp-lbl">XP EARNED</div>
+            <div class="xp-val">{{ xp_so_far }} XP</div>
+            <div class="xp-lbl">{{ rank|upper }}</div>
         </div>
     </div>
 
@@ -217,24 +223,21 @@
         <div class="prog-fill" style="width:{{ progress_percentage }}%"></div>
     </div>
 
-    <!-- AI reaction (contextual per question number) -->
+    <!-- AI reaction (contextual — reflects previous answer quality) -->
     <div class="ai-reaction">
-        {% if question_number == 1 %}
-            "Welcome! Let's start with something straightforward."
-        {% elif question_number == 2 %}
-            "Good start. Let's keep going."
-        {% elif question_number == 3 %}
-            "Interesting. Now let's test your depth."
-        {% elif question_number == 4 %}
-            "We're halfway through. Stay focused."
-        {% elif question_number == 5 %}
-            "You're doing well. Let's push further."
-        {% elif question_number == 6 %}
-            "Almost there. These next ones are tougher."
-        {% elif question_number == 7 %}
-            "Second to last. Give it your best."
-        {% else %}
-            "Final question. Make it count."
+        {% if last_score >= 9 %}"Outstanding answer. That's exactly what I was looking for."
+        {% elif last_score >= 7 %}"Good answer. Let's keep that momentum going."
+        {% elif last_score >= 5 %}"Decent response. Try to add more depth next time."
+        {% elif last_score >= 3 %}"That needed more detail. Let's see how you do here."
+        {% elif last_score >= 0 %}"I expected more. Focus and give me a stronger answer."
+        {% elif question_number == 1 %}"Welcome! Let's start with something straightforward."
+        {% elif question_number == 2 %}"Good start. Let's keep going."
+        {% elif question_number == 3 %}"Now let's test your depth."
+        {% elif question_number == 4 %}"We're halfway through. Stay focused."
+        {% elif question_number == 5 %}"Let's push further."
+        {% elif question_number == 6 %}"These next ones are tougher."
+        {% elif question_number == 7 %}"Second to last. Give it your best."
+        {% else %}"Final question. Make it count."
         {% endif %}
     </div>
 
@@ -278,34 +281,52 @@ document.addEventListener("DOMContentLoaded", function () {
     var ta       = document.getElementById("answerInput");
     var btn      = document.getElementById("submitBtn");
     var thinking = document.getElementById("ai-thinking");
-    var burst    = document.getElementById("xpBurst");
-    var xpAmt    = document.getElementById("xpAmount");
 
     ta.value = "";
     ta.focus();
 
-    var submitted = false;
+    // ── Show previous answer's XP result on page load ──────────────
+    // last_xp and last_score are injected from Django context
+    var lastXp    = {{ last_xp }};
+    var lastScore = {{ last_score }};
+    var lastBonus = "{{ last_bonus }}";
 
-    function showBurst() {
-        /* XP per question increases with level */
-        var qn  = {{ question_number }};
-        var xp  = qn <= 2 ? 50 : qn <= 4 ? 75 : qn <= 6 ? 100 : 125;
-        xpAmt.textContent = xp;
-        burst.classList.add("show");
-        setTimeout(function () { burst.classList.remove("show"); }, 1200);
+    if (lastScore >= 0) {
+        // Show result of the answer that was just submitted
+        setTimeout(function () {
+            if (lastXp > 0) {
+                var burst  = document.getElementById("xpBurst");
+                var amt    = document.getElementById("xpAmount");
+                var sub    = document.getElementById("xpBurstSub");
+                amt.textContent = lastXp;
+                // Label based on score tier
+                if (lastScore >= 9)      sub.textContent = "🏆 Excellent answer!";
+                else if (lastScore >= 7) sub.textContent = lastBonus || "💪 Strong answer!";
+                else if (lastScore >= 5) sub.textContent = "👍 Decent answer";
+                else                     sub.textContent = "📖 Keep practising";
+                if (lastBonus) sub.textContent = lastBonus + " · " + sub.textContent;
+                burst.classList.add("show");
+                setTimeout(function () { burst.classList.remove("show"); }, 2000);
+            } else {
+                // 0 XP — show the no-xp popup
+                var noXp = document.getElementById("noXpBurst");
+                noXp.classList.add("show");
+                setTimeout(function () { noXp.classList.remove("show"); }, 1800);
+            }
+        }, 300);
     }
+
+    // ── Submit handler ──────────────────────────────────────────────
+    var submitted = false;
 
     function doSubmit() {
         if (submitted) return;
         if (ta.value.trim().length === 0) return;
         submitted = true;
-        showBurst();
-        setTimeout(function () {
-            btn.disabled = true;
-            btn.textContent = "Evaluating…";
-            thinking.style.display = "flex";
-            form.submit();
-        }, 600);
+        btn.disabled = true;
+        btn.textContent = "Evaluating…";
+        thinking.style.display = "flex";
+        form.submit();
     }
 
     ta.addEventListener("keydown", function (e) {

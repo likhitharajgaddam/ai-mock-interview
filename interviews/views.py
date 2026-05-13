@@ -459,11 +459,50 @@ def start_interview(request, role_id):
         overall      = evaluation.get("overall_score", 0)
         display_score = round(overall / 10)
 
+        # ── Smart XP: score-based, not time-based ──────────────────
+        # score 0-2  → 0 XP  (gibberish / no answer)
+        # score 3-4  → 5 XP  (weak)
+        # score 5-6  → 15 XP (decent)
+        # score 7-8  → 30 XP (strong)
+        # score 9-10 → 50 XP (excellent)
+        if display_score <= 2:
+            xp_gained = 0
+        elif display_score <= 4:
+            xp_gained = 5
+        elif display_score <= 6:
+            xp_gained = 15
+        elif display_score <= 8:
+            xp_gained = 30
+        else:
+            xp_gained = 50
+
+        # Streak bonus: 3+ consecutive answers scoring >= 7
+        answers_so_far = interview_data.get("answers", [])
+        streak = 0
+        for prev in reversed(answers_so_far):
+            if prev.get("score", 0) >= 7:
+                streak += 1
+            else:
+                break
+        streak_bonus = 0
+        bonus_label  = ""
+        if display_score >= 7:
+            if streak >= 2:
+                streak_bonus = 10
+                bonus_label  = "🔥 Streak Bonus"
+            if len(user_answer.split()) >= 60:
+                streak_bonus += 5
+                bonus_label   = "🧠 Deep Explanation" if not bonus_label else bonus_label
+
+        xp_gained += streak_bonus
+
         interview_data["answers"].append({
             "question":    question,
             "user_answer": user_answer,
             "score":       display_score,
             "feedback":    evaluation.get("feedback", ""),
+            "xp_gained":   xp_gained,
+            "bonus_label": bonus_label,
         })
 
         interview_data["total_score"]     += overall
@@ -473,10 +512,33 @@ def start_interview(request, role_id):
 
     # ---- GET — show question ----
     progress = int(((question_number - 1) / MAX_QUESTIONS) * 100)
-    # XP earned so far in this session (50/75/100/125 per question tier)
-    xp_so_far = 0
-    for i in range(question_number - 1):
-        xp_so_far += 50 if i < 2 else 75 if i < 4 else 100 if i < 6 else 125
+
+    # XP earned so far — sum actual per-answer XP stored in session
+    answers_list = interview_data.get("answers", [])
+    xp_so_far    = sum(a.get("xp_gained", 0) for a in answers_list)
+
+    # Last answer's XP gain — shown as burst on this page load
+    last_xp       = 0
+    last_bonus    = ""
+    last_score    = -1
+    if answers_list:
+        last       = answers_list[-1]
+        last_xp    = last.get("xp_gained", 0)
+        last_bonus = last.get("bonus_label", "")
+        last_score = last.get("score", -1)
+
+    # Rank based on total XP
+    if xp_so_far >= 200:
+        rank = "Expert Engineer"
+    elif xp_so_far >= 120:
+        rank = "Interview Pro"
+    elif xp_so_far >= 60:
+        rank = "Skilled Candidate"
+    elif xp_so_far >= 20:
+        rank = "Explorer"
+    else:
+        rank = "Beginner"
+
     return render(request, "interview.html", {
         "role":                role,
         "question":            question,
@@ -484,6 +546,10 @@ def start_interview(request, role_id):
         "progress_percentage": progress,
         "max_questions":       MAX_QUESTIONS,
         "xp_so_far":           xp_so_far,
+        "last_xp":             last_xp,
+        "last_bonus":          last_bonus,
+        "last_score":          last_score,
+        "rank":                rank,
     })
 
 
@@ -494,12 +560,21 @@ def interview_result(request, session_id):
     # Pre-compute SVG ring offset: circumference = 2*pi*56 = 351.9
     circumference = 351.9
     ring_offset = round(circumference - (session.total_score / 100) * circumference, 1)
-    # XP earned: sum of per-question XP based on tier
+    # XP earned: sum actual per-answer XP from session answers
+    # Session is already cleared, so derive from score-based formula
     xp_earned = 0
-    for i in range(8):
-        xp_earned += 50 if i < 2 else 75 if i < 4 else 100 if i < 6 else 125
-    # Scale by score percentage
-    xp_earned = int(xp_earned * session.total_score / 100)
+    for ans in answers:
+        s = ans.score
+        if s <= 2:
+            xp_earned += 0
+        elif s <= 4:
+            xp_earned += 5
+        elif s <= 6:
+            xp_earned += 15
+        elif s <= 8:
+            xp_earned += 30
+        else:
+            xp_earned += 50
     return render(request, "result.html", {
         "role":        session.job_role,
         "session":     session,
