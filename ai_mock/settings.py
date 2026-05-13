@@ -122,9 +122,12 @@ DATABASES = {
 
 _db_url = os.environ.get("DATABASE_URL", "")
 if _db_url:
-    DATABASES["default"] = dj_database_url.parse(
-        _db_url, conn_max_age=600, ssl_require=True
+    _db_config = dj_database_url.config(
+        default=_db_url,
+        conn_max_age=600,
     )
+    if _db_config:
+        DATABASES["default"] = _db_config
 
 # -----------------------------------------------------------------------
 # Password validation
