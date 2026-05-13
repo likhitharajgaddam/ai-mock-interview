@@ -1,1 +1,1 @@
-web: gunicorn ai_mock.wsgi:application --bind 0.0.0.0:$PORT --timeout 120 --log-level debug --access-logfile -
+web: gunicorn ai_mock.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info --access-logfile -
