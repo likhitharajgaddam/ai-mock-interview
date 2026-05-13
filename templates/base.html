@@ -225,26 +225,26 @@ body > *:not(canvas) { position:relative; z-index:2; }
 <div id="xpToast">
     <div class="toast-ico" id="toastIco">🎨</div>
     <div>
-        <div class="toast-title" id="toastTitle">Theme Unlocked!</div>
-        <div class="toast-sub"   id="toastSub">You can now apply it from the theme panel.</div>
+        <div class="toast-title" id="toastTitle">Theme Applied!</div>
+        <div class="toast-sub"   id="toastSub">Your new theme is active.</div>
     </div>
 </div>
 
-<!-- Theme panel overlay -->
-<div id="themePanelOverlay" onclick="closeThemePanel()"></div>
+<!-- Theme panel overlay — click outside panel to close -->
+<div id="themePanelOverlay"></div>
 
-<!-- Theme panel -->
-<div id="themePanel">
+<!-- Theme panel — stopPropagation prevents overlay click from firing -->
+<div id="themePanel" onclick="event.stopPropagation()">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div class="tp-title">🎨 Theme Studio</div>
-        <button onclick="closeThemePanel()" style="background:transparent;border:none;color:#64748b;font-size:18px;cursor:pointer;padding:0;">✕</button>
+        <button id="closePanelBtn" style="background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;padding:0;line-height:1;">✕</button>
     </div>
-    <div class="tp-sub">Unlock themes by earning XP through quality answers.</div>
+    <div class="tp-sub" id="tpXpLine">Earn XP through quality answers to unlock themes.</div>
 
-    <div class="tp-section">UNLOCKED THEMES</div>
+    <div class="tp-section">UNLOCKED</div>
     <div id="unlockedThemes"></div>
 
-    <div class="tp-section">LOCKED THEMES</div>
+    <div class="tp-section">LOCKED</div>
     <div id="lockedThemes"></div>
 </div>
 
@@ -326,11 +326,11 @@ animate();
 <script>
 (function () {
     /* ── Parallax (home page only) ── */
-    const glassCard = document.querySelector(".glass-card");
+    var glassCard = document.querySelector(".glass-card");
     if (glassCard) {
         document.addEventListener("mousemove", function (e) {
-            const x = (window.innerWidth/2  - e.pageX) / 100;
-            const y = (window.innerHeight/2 - e.pageY) / 100;
+            var x = (window.innerWidth/2  - e.pageX) / 100;
+            var y = (window.innerHeight/2 - e.pageY) / 100;
             glassCard.style.transform = "translate(" + x + "px, " + y + "px)";
         });
     }
@@ -344,178 +344,199 @@ animate();
 }());
 
 /* ══════════════════════════════════════════════════════════════
-   THEME SYSTEM
-   - Themes defined with XP thresholds
-   - Unlocked status stored in localStorage
-   - Active theme stored in localStorage and applied on load
+   THEME SYSTEM — fully interactive, XP-gated
 ══════════════════════════════════════════════════════════════ */
 var THEMES = [
-    {
-        id: "default",
-        name: "Default",
-        desc: "The classic dark purple AI aesthetic.",
-        icon: "🌌",
-        xp_required: 0,
-        preview: "linear-gradient(135deg,#0f172a,#020617)",
-        accent: "#7c3aed"
-    },
-    {
-        id: "neon",
-        name: "Neon Purple",
-        desc: "Electric magenta glow. Unlock at 100 XP.",
-        icon: "💜",
-        xp_required: 100,
-        preview: "linear-gradient(135deg,#0d0014,#1a0028)",
-        accent: "#d946ef"
-    },
-    {
-        id: "matrix",
-        name: "Matrix Hacker",
-        desc: "Green terminal aesthetic. Unlock at 250 XP.",
-        icon: "💚",
-        xp_required: 250,
-        preview: "linear-gradient(135deg,#000a00,#001400)",
-        accent: "#00ff41"
-    },
-    {
-        id: "synthwave",
-        name: "Synthwave",
-        desc: "Retro pink and purple. Unlock at 500 XP.",
-        icon: "🌸",
-        xp_required: 500,
-        preview: "linear-gradient(135deg,#10002b,#240046)",
-        accent: "#f72585"
-    },
-    {
-        id: "jarvis",
-        name: "Jarvis AI",
-        desc: "Iron Man blue intelligence. Unlock at 800 XP.",
-        icon: "🔵",
-        xp_required: 800,
-        preview: "linear-gradient(135deg,#000d1a,#001a33)",
-        accent: "#00d4ff"
-    },
-    {
-        id: "cyberpunk",
-        name: "Cyberpunk",
-        desc: "Neon yellow and orange. Unlock at 1200 XP.",
-        icon: "⚡",
-        xp_required: 1200,
-        preview: "linear-gradient(135deg,#0a0a0f,#1a0a00)",
-        accent: "#ffd60a"
-    }
+    { id:"default",   name:"Default",       desc:"Classic dark purple AI aesthetic.",        icon:"🌌", xp_required:0,    preview:"linear-gradient(135deg,#0f172a,#020617)", accent:"#7c3aed" },
+    { id:"neon",      name:"Neon Purple",    desc:"Electric magenta glow.",                  icon:"💜", xp_required:100,  preview:"linear-gradient(135deg,#0d0014,#1a0028)", accent:"#d946ef" },
+    { id:"matrix",    name:"Matrix Hacker",  desc:"Green terminal hacker aesthetic.",         icon:"💚", xp_required:250,  preview:"linear-gradient(135deg,#000a00,#001400)", accent:"#00ff41" },
+    { id:"synthwave", name:"Synthwave",      desc:"Retro pink and purple vibes.",             icon:"🌸", xp_required:500,  preview:"linear-gradient(135deg,#10002b,#240046)", accent:"#f72585" },
+    { id:"jarvis",    name:"Jarvis AI",      desc:"Iron Man blue intelligence.",              icon:"🔵", xp_required:800,  preview:"linear-gradient(135deg,#000d1a,#001a33)", accent:"#00d4ff" },
+    { id:"cyberpunk", name:"Cyberpunk",      desc:"Neon yellow and orange energy.",           icon:"⚡", xp_required:1200, preview:"linear-gradient(135deg,#0a0a0f,#1a0a00)", accent:"#ffd60a" }
 ];
 
-/* Get total XP from localStorage (set by dashboard page) */
-function getTotalXP() {
-    return parseInt(localStorage.getItem("ai_mock_total_xp") || "0", 10);
-}
+/* ── Storage helpers ── */
+function getTotalXP()    { return parseInt(localStorage.getItem("ai_mock_total_xp") || "0", 10); }
+function getActiveTheme(){ return localStorage.getItem("ai_mock_theme") || "default"; }
 
-function getActiveTheme() {
-    return localStorage.getItem("ai_mock_theme") || "default";
-}
-
-function setActiveTheme(id) {
-    localStorage.setItem("ai_mock_theme", id);
-    applyTheme(id);
-    renderThemePanel();
-}
-
+/* ── Apply theme to DOM ── */
 function applyTheme(id) {
     document.body.setAttribute("data-theme", id === "default" ? "" : id);
 }
 
-/* Apply saved theme immediately on load */
+/* Apply saved theme immediately on every page load — no flash */
 (function () {
     var saved = getActiveTheme();
-    if (saved && saved !== "default") {
-        applyTheme(saved);
-    }
+    if (saved && saved !== "default") { applyTheme(saved); }
 }());
 
-function openThemePanel() {
+/* ── Toast ── */
+function showToast(ico, title, sub, color) {
+    var el = document.getElementById("xpToast");
+    if (!el) return;
+    document.getElementById("toastIco").textContent   = ico;
+    document.getElementById("toastTitle").textContent = title;
+    document.getElementById("toastSub").textContent   = sub;
+    el.style.borderColor = color || "var(--accent-border)";
+    el.classList.add("show");
+    setTimeout(function () { el.classList.remove("show"); }, 3800);
+}
+
+/* ── Select and apply an unlocked theme ── */
+function selectTheme(id) {
+    var theme = THEMES.find(function(t){ return t.id === id; });
+    if (!theme) return;
+    var totalXP = getTotalXP();
+    if (totalXP < theme.xp_required) {
+        /* Should not happen via UI, but guard anyway */
+        showToast("🔒", "Theme Locked", "You need " + theme.xp_required + " XP to unlock " + theme.name + ".", "#ef4444");
+        return;
+    }
+    localStorage.setItem("ai_mock_theme", id);
+    applyTheme(id);
     renderThemePanel();
-    document.getElementById("themePanelOverlay").style.display = "block";
-    setTimeout(function () { document.getElementById("themePanel").classList.add("open"); }, 10);
+    showToast(theme.icon, theme.name + " applied!", "Your theme has been updated.", theme.accent);
 }
 
-function closeThemePanel() {
-    document.getElementById("themePanel").classList.remove("open");
-    setTimeout(function () { document.getElementById("themePanelOverlay").style.display = "none"; }, 300);
+/* ── Click on a locked theme — show XP info ── */
+function clickLocked(theme) {
+    var totalXP  = getTotalXP();
+    var needed   = theme.xp_required - totalXP;
+    var pct      = Math.min(100, Math.round((totalXP / theme.xp_required) * 100));
+    showToast(
+        "🔒",
+        theme.name + " is locked",
+        "You need " + needed + " more XP. (" + totalXP + " / " + theme.xp_required + " XP · " + pct + "% there)",
+        "#ef4444"
+    );
 }
 
+/* ── Render panel contents ── */
 function renderThemePanel() {
-    var totalXP   = getTotalXP();
-    var active    = getActiveTheme();
-    var unlocked  = document.getElementById("unlockedThemes");
-    var locked    = document.getElementById("lockedThemes");
-    unlocked.innerHTML = "";
-    locked.innerHTML   = "";
+    var totalXP  = getTotalXP();
+    var active   = getActiveTheme();
+    var uEl      = document.getElementById("unlockedThemes");
+    var lEl      = document.getElementById("lockedThemes");
+    var xpLine   = document.getElementById("tpXpLine");
+    if (!uEl || !lEl) return;
+
+    /* Update XP line */
+    if (xpLine) {
+        xpLine.textContent = "Your XP: " + totalXP + " · Earn more by answering well in interviews.";
+    }
+
+    uEl.innerHTML = "";
+    lEl.innerHTML = "";
 
     THEMES.forEach(function (t) {
         var isUnlocked = totalXP >= t.xp_required;
         var isActive   = active === t.id;
         var pct        = t.xp_required === 0 ? 100 : Math.min(100, Math.round((totalXP / t.xp_required) * 100));
+        var needed     = Math.max(0, t.xp_required - totalXP);
 
         var card = document.createElement("div");
-        card.className = "theme-card" + (isActive ? " active" : "") + (isUnlocked ? "" : " locked");
+        card.className = "theme-card" + (isActive ? " active" : "");
         card.style.background = t.preview;
+        /* Ensure pointer events always work */
+        card.style.pointerEvents = "auto";
+        card.style.cursor = isUnlocked ? "pointer" : "pointer";
 
         if (isUnlocked) {
-            card.onclick = function () { setActiveTheme(t.id); };
+            card.style.opacity = "1";
             card.innerHTML =
-                '<div style="display:flex;align-items:center;gap:8px;">' +
-                    '<span style="font-size:18px;">' + t.icon + '</span>' +
-                    '<div>' +
-                        '<div class="tc-name">' + t.name + (isActive ? ' <span style="font-size:10px;color:' + t.accent + '">● ACTIVE</span>' : '') + '</div>' +
+                '<div style="display:flex;align-items:center;gap:10px;">' +
+                    '<span style="font-size:22px;">' + t.icon + '</span>' +
+                    '<div style="flex:1;">' +
+                        '<div class="tc-name">' + t.name +
+                            (isActive
+                                ? ' <span style="font-size:10px;color:' + t.accent + ';font-weight:800;">● ACTIVE</span>'
+                                : '') +
+                        '</div>' +
                         '<div class="tc-desc">' + t.desc + '</div>' +
                     '</div>' +
+                    (!isActive
+                        ? '<span style="font-size:11px;font-weight:700;color:' + t.accent + ';white-space:nowrap;">Apply →</span>'
+                        : '') +
                 '</div>';
-            unlocked.appendChild(card);
+            /* Attach click — use closure to capture t */
+            (function(theme){ card.addEventListener("click", function(){ selectTheme(theme.id); }); })(t);
+            uEl.appendChild(card);
         } else {
+            card.style.opacity = "0.6";
             card.innerHTML =
-                '<div class="tc-lock">🔒</div>' +
-                '<div style="display:flex;align-items:center;gap:8px;">' +
-                    '<span style="font-size:18px;opacity:0.5;">' + t.icon + '</span>' +
-                    '<div>' +
-                        '<div class="tc-name" style="opacity:0.6;">' + t.name + '</div>' +
+                '<div style="display:flex;align-items:center;gap:10px;">' +
+                    '<span style="font-size:22px;filter:grayscale(1);">' + t.icon + '</span>' +
+                    '<div style="flex:1;">' +
+                        '<div class="tc-name" style="display:flex;align-items:center;gap:6px;">' +
+                            '<span>🔒</span>' + t.name +
+                        '</div>' +
                         '<div class="tc-desc">' + t.desc + '</div>' +
-                        '<div class="tc-xp" style="color:' + t.accent + ';">' + t.xp_required + ' XP required · You have ' + totalXP + ' XP</div>' +
+                        '<div class="tc-xp" style="color:' + t.accent + ';margin-top:5px;">' +
+                            needed + ' more XP needed · ' + pct + '% there' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="tc-progress"><div class="tc-progress-fill" style="width:' + pct + '%;background:' + t.accent + ';"></div></div>';
-            locked.appendChild(card);
+                '<div class="tc-progress" style="margin-top:8px;">' +
+                    '<div class="tc-progress-fill" style="width:' + pct + '%;background:' + t.accent + ';"></div>' +
+                '</div>';
+            /* Locked click — show info toast */
+            (function(theme){ card.addEventListener("click", function(){ clickLocked(theme); }); })(t);
+            lEl.appendChild(card);
         }
     });
 
-    if (unlocked.children.length === 0) {
-        unlocked.innerHTML = '<div style="font-size:12px;color:#475569;padding:8px 0;">No themes unlocked yet. Earn XP by answering well.</div>';
+    if (uEl.children.length === 0) {
+        uEl.innerHTML = '<div style="font-size:12px;color:#475569;padding:8px 0;">No themes unlocked yet. Earn XP by answering well.</div>';
     }
-    if (locked.children.length === 0) {
-        locked.innerHTML = '<div style="font-size:12px;color:#475569;padding:8px 0;">All themes unlocked! 🎉</div>';
+    if (lEl.children.length === 0) {
+        lEl.innerHTML = '<div style="font-size:12px;color:#475569;padding:8px 0;">All themes unlocked! 🎉</div>';
     }
 }
 
-/* Show XP toast */
-function showToast(ico, title, sub) {
-    var t = document.getElementById("xpToast");
-    document.getElementById("toastIco").textContent   = ico;
-    document.getElementById("toastTitle").textContent = title;
-    document.getElementById("toastSub").textContent   = sub;
-    t.classList.add("show");
-    setTimeout(function () { t.classList.remove("show"); }, 3500);
+/* ── Open / close panel ── */
+function openThemePanel() {
+    renderThemePanel();
+    var overlay = document.getElementById("themePanelOverlay");
+    var panel   = document.getElementById("themePanel");
+    if (!overlay || !panel) return;
+    overlay.style.display = "block";
+    /* Small delay so CSS transition fires */
+    requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+            panel.classList.add("open");
+        });
+    });
 }
 
-/* Check for newly unlocked themes after XP update */
+function closeThemePanel() {
+    var overlay = document.getElementById("themePanelOverlay");
+    var panel   = document.getElementById("themePanel");
+    if (!panel) return;
+    panel.classList.remove("open");
+    setTimeout(function () {
+        if (overlay) overlay.style.display = "none";
+    }, 320);
+}
+
+/* Wire up close button and overlay click after DOM ready */
+document.addEventListener("DOMContentLoaded", function () {
+    var closeBtn = document.getElementById("closePanelBtn");
+    if (closeBtn) closeBtn.addEventListener("click", closeThemePanel);
+
+    var overlay = document.getElementById("themePanelOverlay");
+    if (overlay) overlay.addEventListener("click", closeThemePanel);
+});
+
+/* ── Check for newly unlocked themes ── */
 function checkThemeUnlocks(oldXP, newXP) {
     THEMES.forEach(function (t) {
         if (t.xp_required > 0 && oldXP < t.xp_required && newXP >= t.xp_required) {
-            showToast(t.icon, "Theme Unlocked: " + t.name, "Open Theme Studio from the nav to apply it.");
+            showToast(t.icon, "🎉 Theme Unlocked: " + t.name, "Open Theme Studio in the nav to apply it.", t.accent);
         }
     });
 }
 
-/* Called by dashboard page to sync total XP into localStorage */
+/* ── Called by dashboard to sync XP ── */
 window.syncTotalXP = function (xp) {
     var old = getTotalXP();
     localStorage.setItem("ai_mock_total_xp", xp);
