@@ -251,27 +251,6 @@ for _role_name, _qs in FALLBACK_QUESTIONS.items():
 
 
 # ---------------------------------------------------------------------------
-# Groq client — lazy, safe
-# ---------------------------------------------------------------------------
-
-def _get_groq_client():
-    # type: () -> Optional[object]
-    key = os.environ.get("GROQ_API_KEY", "").strip()
-    if not key:
-        logger.warning("[GROQ] GROQ_API_KEY not set — AI question generation disabled.")
-        return None
-    try:
-        from groq import Groq
-        return Groq(api_key=key)
-    except ImportError:
-        logger.error("[GROQ] groq package not installed.")
-        return None
-    except Exception as exc:
-        logger.error("[GROQ] Client init failed: %s", exc)
-        return None
-
-
-# ---------------------------------------------------------------------------
 # Question generation — guaranteed unique per session
 # ---------------------------------------------------------------------------
 
@@ -297,47 +276,78 @@ def _pick_unique_questions(role, count, used_questions=None):
 
 def generate_ai_questions_logic(role, count=8, used_questions=None):
     # type: (object, int, Optional[List[str]]) -> List[str]
-    client = _get_groq_client()
-    if client is None:
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not key:
         return _pick_unique_questions(role, count, used_questions)
 
     used = set(used_questions or [])
+
+    # Prompt engineered for short, natural, conversational interview questions
     prompt = (
-        "Generate {count} unique advanced technical interview questions "
-        "for a {role} role.\n\n"
-        "Requirements:\n"
-        "- Each question must be different and non-repetitive\n"
-        "- Questions should vary in topic and difficulty\n"
-        "- Return ONLY numbered questions, one per line\n"
-        "- No explanations, no answers\n\n"
-        "Role description: {desc}"
-    ).format(count=count, role=role.name, desc=role.description)
+        "You are a technical interviewer at a top tech company.\n"
+        "Generate {count} interview questions for a {role} candidate.\n\n"
+        "STRICT RULES:\n"
+        "- Each question must be SHORT — maximum 12 words\n"
+        "- Sound like a real interviewer speaking naturally\n"
+        "- One concept per question\n"
+        "- No multi-part questions\n"
+        "- No academic or essay-style prompts\n"
+        "- Vary difficulty: start easy, get harder\n"
+        "- Return ONLY a numbered list, nothing else\n\n"
+        "GOOD examples:\n"
+        "1. What is database indexing?\n"
+        "2. How does rate limiting work?\n"
+        "3. Explain connection pooling.\n"
+        "4. What is idempotency in REST APIs?\n"
+        "5. How would you prevent SQL injection?\n\n"
+        "BAD examples (too long, too academic — DO NOT do this):\n"
+        "- Describe the complete architecture of a distributed blockchain system...\n"
+        "- Explain in detail how you would design a microservices platform...\n\n"
+        "Now generate {count} short interview questions for: {role}"
+    ).format(count=count, role=role.name)
 
     try:
-        from groq import Groq
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.9,
-            max_tokens=600,
-        )
-        text = response.choices[0].message.content.strip()
-        questions = []
-        for line in text.split("\n"):
-            line = line.strip()
-            if not line:
-                continue
-            line = re.sub(r"^\d+[\.\)\-]\s*", "", line).strip()
-            if line and line not in used:
-                questions.append(line)
-        if len(questions) >= count:
-            logger.info("[QUESTIONS] AI generated %d questions for %s",
-                        len(questions), role.name)
-            return questions[:count]
-        logger.warning("[QUESTIONS] AI returned only %d questions, using fallback.",
-                       len(questions))
+        import httpx
+        headers = {
+            "Authorization": "Bearer {}".format(key),
+            "Content-Type":  "application/json",
+            "User-Agent":    "Mozilla/5.0 (compatible; AIMockInterview/1.0)",
+        }
+        payload = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.8,
+            "max_tokens":  400,
+        }
+        with httpx.Client(timeout=20) as client:
+            resp = client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                json=payload, headers=headers
+            )
+
+        if resp.status_code == 200:
+            text = resp.json()["choices"][0]["message"]["content"].strip()
+            questions = []
+            for line in text.split("\n"):
+                line = line.strip()
+                if not line:
+                    continue
+                # Strip numbering like "1." "1)" "-"
+                line = re.sub(r"^\d+[\.\)\-]\s*", "", line).strip()
+                # Skip lines that are clearly not questions (headers, etc.)
+                if len(line) < 5 or len(line) > 120:
+                    continue
+                if line not in used:
+                    questions.append(line)
+            if len(questions) >= count:
+                logger.info("[QUESTIONS] AI generated %d for %s", len(questions), role.name)
+                return questions[:count]
+            logger.warning("[QUESTIONS] AI returned %d, using fallback.", len(questions))
+        else:
+            logger.error("[QUESTIONS] HTTP %d: %.100s", resp.status_code, resp.text)
+
     except Exception as exc:
-        logger.error("[QUESTIONS] AI generation failed: %s", exc)
+        logger.error("[QUESTIONS] Failed: %s", exc)
 
     return _pick_unique_questions(role, count, used_questions)
 
@@ -494,12 +504,8 @@ def generate_ai_question(request):
 
 
 def ai_status(request):
-    """
-    Diagnostic endpoint — visit /interview/api/status/ in browser.
-    Tests the Groq API directly via HTTP (no SDK).
-    """
-    import os, urllib.request, urllib.error, json as _json
-
+    """Diagnostic — visit /interview/api/status/ to verify Groq is working."""
+    import os
     key = os.environ.get("GROQ_API_KEY", "").strip()
 
     if not key:
@@ -508,35 +514,32 @@ def ai_status(request):
             "status": "ERROR — GROQ_API_KEY not set in Render environment",
         })
 
-    key_preview    = key[:8] + "..." + key[-4:]
-    key_format_ok  = key.startswith("gsk_")
-    api_result     = "not_tested"
-    api_error      = None
+    key_preview   = key[:8] + "..." + key[-4:]
+    api_result    = "not_tested"
+    api_error     = None
 
     try:
-        payload = _json.dumps({
+        import httpx
+        headers = {
+            "Authorization": "Bearer {}".format(key),
+            "Content-Type":  "application/json",
+            "User-Agent":    "Mozilla/5.0 (compatible; AIMockInterview/1.0)",
+        }
+        payload = {
             "model": "llama-3.3-70b-versatile",
             "messages": [{"role": "user", "content": "Reply with one word: working"}],
-            "max_tokens": 10,
-            "temperature": 0,
-        }).encode("utf-8")
-
-        req = urllib.request.Request(
-            "https://api.groq.com/openai/v1/chat/completions",
-            data=payload,
-            headers={
-                "Authorization": "Bearer {}".format(key),
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            body = _json.loads(resp.read().decode("utf-8"))
-        api_result = body["choices"][0]["message"]["content"].strip()
-
-    except urllib.error.HTTPError as exc:
-        api_error  = "HTTP {}: {}".format(exc.code, exc.read().decode("utf-8", errors="replace")[:200])
-        api_result = "failed"
+            "max_tokens": 10, "temperature": 0,
+        }
+        with httpx.Client(timeout=15) as client:
+            resp = client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                json=payload, headers=headers
+            )
+        if resp.status_code == 200:
+            api_result = resp.json()["choices"][0]["message"]["content"].strip()
+        else:
+            api_error  = "HTTP {}: {}".format(resp.status_code, resp.text[:200])
+            api_result = "failed"
     except Exception as exc:
         api_error  = "{}: {}".format(type(exc).__name__, str(exc))
         api_result = "failed"
@@ -544,9 +547,9 @@ def ai_status(request):
     return JsonResponse({
         "groq_key_set":       True,
         "groq_key_preview":   key_preview,
-        "groq_key_format_ok": key_format_ok,
+        "groq_key_format_ok": key.startswith("gsk_"),
         "groq_api_test":      api_result,
         "groq_api_error":     api_error,
-        "method":             "direct_http",
-        "status":             "OK" if api_result not in ("failed", "not_tested") else "ERROR",
+        "method":             "httpx_direct",
+        "status":             "OK" if api_result not in ("failed","not_tested") else "ERROR",
     })
