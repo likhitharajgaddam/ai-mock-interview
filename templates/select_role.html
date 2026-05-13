@@ -3,153 +3,151 @@
 <style>
 .career-wrap { max-width: 1140px; width: 100%; margin: 0 auto; }
 
+/* ── Hero ──────────────────────────────────────────────────────── */
 .career-hero { text-align: center; margin-bottom: 44px; }
 .career-hero .eyebrow {
     font-size: 11px; font-weight: 800; letter-spacing: 2px;
     color: #6366f1 !important; margin-bottom: 10px;
 }
 .career-hero h1 {
-    font-size: clamp(26px, 5vw, 42px); font-weight: 900;
-    background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-size: clamp(26px,5vw,42px); font-weight: 900;
+    background: linear-gradient(135deg,#a78bfa 0%,#60a5fa 50%,#34d399 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin-bottom: 10px; line-height: 1.2;
 }
-.career-hero p { font-size: 15px; color: #64748b !important; max-width: 500px; margin: 0 auto; }
+.career-hero p { font-size: 15px; color: #64748b !important; max-width: 520px; margin: 0 auto; }
 
-.stats-bar {
-    display: flex; justify-content: center; gap: 36px;
-    margin-bottom: 40px; flex-wrap: wrap;
-}
-.stat-item { text-align: center; }
-.stat-item .val { font-size: 22px; font-weight: 900; color: #a78bfa !important; }
-.stat-item .lbl { font-size: 10px; color: #475569 !important; letter-spacing: 0.8px; }
+/* ── Stats bar ─────────────────────────────────────────────────── */
+.stats-bar { display:flex; justify-content:center; gap:36px; margin-bottom:40px; flex-wrap:wrap; }
+.stat-item { text-align:center; }
+.stat-item .val { font-size:22px; font-weight:900; color:#a78bfa !important; }
+.stat-item .lbl { font-size:10px; color:#475569 !important; letter-spacing:0.8px; }
 
-/* ── Role card base ────────────────────────────────────────────── */
+/* ── Role card ─────────────────────────────────────────────────── */
 .role-card {
-    position: relative;
-    background: rgba(10,14,28,0.98);
-    border-radius: 20px; padding: 26px;
-    height: 100%; display: flex; flex-direction: column;
-    transition: transform 0.28s ease, box-shadow 0.28s ease;
-    overflow: hidden;
-    border: 1px solid rgba(124,58,237,0.2);
+    position:relative; background:rgba(10,14,28,0.98);
+    border-radius:20px; padding:26px; height:100%;
+    display:flex; flex-direction:column;
+    transition:transform 0.28s ease, box-shadow 0.28s ease;
+    overflow:hidden; border:1px solid rgba(124,58,237,0.2);
 }
 .role-card::after {
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    transform: scaleX(0); transition: transform 0.28s ease;
-    transform-origin: left; pointer-events: none;
+    content:""; position:absolute; top:0; left:0; right:0; height:2px;
+    transform:scaleX(0); transition:transform 0.28s ease;
+    transform-origin:left; pointer-events:none;
 }
-.role-card:hover { transform: translateY(-7px); }
-.role-card:hover::after { transform: scaleX(1); }
+.role-card:hover { transform:translateY(-7px); }
+.role-card:hover::after { transform:scaleX(1); }
 
-/* Per-theme card variants */
-.rc-purple { border-color: rgba(167,139,250,0.25); }
-.rc-purple:hover { box-shadow: 0 0 45px rgba(167,139,250,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(167,139,250,0.55); }
-.rc-purple::after { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
-
-.rc-red { border-color: rgba(248,113,113,0.25); }
-.rc-red:hover { box-shadow: 0 0 45px rgba(248,113,113,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(248,113,113,0.55); }
-.rc-red::after { background: linear-gradient(90deg,#dc2626,#f87171); }
-
-.rc-green { border-color: rgba(52,211,153,0.25); }
-.rc-green:hover { box-shadow: 0 0 45px rgba(52,211,153,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(52,211,153,0.55); }
-.rc-green::after { background: linear-gradient(90deg,#059669,#34d399); }
-
-.rc-amber { border-color: rgba(245,158,11,0.25); }
-.rc-amber:hover { box-shadow: 0 0 45px rgba(245,158,11,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(245,158,11,0.55); }
-.rc-amber::after { background: linear-gradient(90deg,#d97706,#f59e0b); }
-
-.rc-orange { border-color: rgba(251,146,60,0.25); }
-.rc-orange:hover { box-shadow: 0 0 45px rgba(251,146,60,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(251,146,60,0.55); }
-.rc-orange::after { background: linear-gradient(90deg,#ea580c,#fb923c); }
-
-.rc-sky { border-color: rgba(56,189,248,0.25); }
-.rc-sky:hover { box-shadow: 0 0 45px rgba(56,189,248,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(56,189,248,0.55); }
-.rc-sky::after { background: linear-gradient(90deg,#0284c7,#38bdf8); }
-
-.rc-pink { border-color: rgba(232,121,249,0.25); }
-.rc-pink:hover { box-shadow: 0 0 45px rgba(232,121,249,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(232,121,249,0.55); }
-.rc-pink::after { background: linear-gradient(90deg,#a21caf,#e879f9); }
-
-.rc-lime { border-color: rgba(74,222,128,0.25); }
-.rc-lime:hover { box-shadow: 0 0 45px rgba(74,222,128,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(74,222,128,0.55); }
-.rc-lime::after { background: linear-gradient(90deg,#16a34a,#4ade80); }
-
-.rc-gold { border-color: rgba(251,191,36,0.25); }
-.rc-gold:hover { box-shadow: 0 0 45px rgba(251,191,36,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(251,191,36,0.55); }
-.rc-gold::after { background: linear-gradient(90deg,#b45309,#fbbf24); }
-
-.rc-teal { border-color: rgba(45,212,191,0.25); }
-.rc-teal:hover { box-shadow: 0 0 45px rgba(45,212,191,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(45,212,191,0.55); }
-.rc-teal::after { background: linear-gradient(90deg,#0d9488,#2dd4bf); }
-
-.rc-blue { border-color: rgba(96,165,250,0.25); }
-.rc-blue:hover { box-shadow: 0 0 45px rgba(96,165,250,0.2), 0 18px 36px rgba(0,0,0,0.4); border-color: rgba(96,165,250,0.55); }
-.rc-blue::after { background: linear-gradient(90deg,#2563eb,#60a5fa); }
+/* Color themes */
+.rc-purple { border-color:rgba(167,139,250,0.25); }
+.rc-purple:hover { box-shadow:0 0 45px rgba(167,139,250,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(167,139,250,0.55); }
+.rc-purple::after { background:linear-gradient(90deg,#7c3aed,#a78bfa); }
+.rc-red { border-color:rgba(248,113,113,0.25); }
+.rc-red:hover { box-shadow:0 0 45px rgba(248,113,113,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(248,113,113,0.55); }
+.rc-red::after { background:linear-gradient(90deg,#dc2626,#f87171); }
+.rc-green { border-color:rgba(52,211,153,0.25); }
+.rc-green:hover { box-shadow:0 0 45px rgba(52,211,153,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(52,211,153,0.55); }
+.rc-green::after { background:linear-gradient(90deg,#059669,#34d399); }
+.rc-amber { border-color:rgba(245,158,11,0.25); }
+.rc-amber:hover { box-shadow:0 0 45px rgba(245,158,11,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(245,158,11,0.55); }
+.rc-amber::after { background:linear-gradient(90deg,#d97706,#f59e0b); }
+.rc-orange { border-color:rgba(251,146,60,0.25); }
+.rc-orange:hover { box-shadow:0 0 45px rgba(251,146,60,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(251,146,60,0.55); }
+.rc-orange::after { background:linear-gradient(90deg,#ea580c,#fb923c); }
+.rc-sky { border-color:rgba(56,189,248,0.25); }
+.rc-sky:hover { box-shadow:0 0 45px rgba(56,189,248,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(56,189,248,0.55); }
+.rc-sky::after { background:linear-gradient(90deg,#0284c7,#38bdf8); }
+.rc-pink { border-color:rgba(232,121,249,0.25); }
+.rc-pink:hover { box-shadow:0 0 45px rgba(232,121,249,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(232,121,249,0.55); }
+.rc-pink::after { background:linear-gradient(90deg,#a21caf,#e879f9); }
+.rc-lime { border-color:rgba(74,222,128,0.25); }
+.rc-lime:hover { box-shadow:0 0 45px rgba(74,222,128,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(74,222,128,0.55); }
+.rc-lime::after { background:linear-gradient(90deg,#16a34a,#4ade80); }
+.rc-gold { border-color:rgba(251,191,36,0.25); }
+.rc-gold:hover { box-shadow:0 0 45px rgba(251,191,36,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(251,191,36,0.55); }
+.rc-gold::after { background:linear-gradient(90deg,#b45309,#fbbf24); }
+.rc-teal { border-color:rgba(45,212,191,0.25); }
+.rc-teal:hover { box-shadow:0 0 45px rgba(45,212,191,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(45,212,191,0.55); }
+.rc-teal::after { background:linear-gradient(90deg,#0d9488,#2dd4bf); }
+.rc-blue { border-color:rgba(96,165,250,0.25); }
+.rc-blue:hover { box-shadow:0 0 45px rgba(96,165,250,0.2),0 18px 36px rgba(0,0,0,0.4); border-color:rgba(96,165,250,0.55); }
+.rc-blue::after { background:linear-gradient(90deg,#2563eb,#60a5fa); }
 
 /* ── Card internals ────────────────────────────────────────────── */
-.xp-badge {
-    position: absolute; top: 14px; right: 14px;
-    background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px; padding: 3px 9px;
-    font-size: 11px; font-weight: 700; color: #fcd34d !important;
+.domain-label {
+    position:absolute; top:14px; right:14px;
+    background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px; padding:3px 10px;
+    font-size:10px; font-weight:800; color:rgba(255,255,255,0.7) !important;
+    letter-spacing:0.5px;
 }
 .role-icon-wrap {
-    width: 52px; height: 52px; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; margin-bottom: 14px; flex-shrink: 0;
-    background: rgba(79,70,229,0.14); border: 1px solid rgba(79,70,229,0.28);
-    transition: transform 0.28s, box-shadow 0.28s;
+    width:52px; height:52px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px; margin-bottom:14px; flex-shrink:0;
+    background:rgba(79,70,229,0.14); border:1px solid rgba(79,70,229,0.28);
+    transition:transform 0.28s, box-shadow 0.28s;
 }
-.role-card:hover .role-icon-wrap { transform: scale(1.1) rotate(-4deg); }
+.role-card:hover .role-icon-wrap { transform:scale(1.1) rotate(-4deg); }
+.role-name { font-size:16px; font-weight:800; color:#f1f5f9 !important; margin-bottom:4px; }
+.career-path-label {
+    font-size:11px; color:#6366f1 !important; font-weight:600;
+    letter-spacing:0.3px; margin-bottom:8px;
+}
+.diff-dots { display:flex; gap:4px; margin-bottom:12px; }
+.diff-dot  { width:7px; height:7px; border-radius:50%; background:rgba(30,41,59,0.8); }
+.diff-dot.on { background:#7c3aed; }
+.role-desc { font-size:13px; color:#475569 !important; flex-grow:1; line-height:1.55; margin-bottom:16px; }
 
-.role-name { font-size: 16px; font-weight: 800; color: #f1f5f9 !important; margin-bottom: 5px; }
-.role-tag  {
-    display: inline-block; font-size: 10px; font-weight: 700;
-    padding: 2px 8px; border-radius: 20px; margin-bottom: 8px;
-    background: rgba(79,70,229,0.14); border: 1px solid rgba(79,70,229,0.28);
-    color: #a78bfa !important; letter-spacing: 0.5px;
+/* Career progression mini-track */
+.career-track {
+    background:rgba(15,20,40,0.6); border:1px solid rgba(124,58,237,0.12);
+    border-radius:10px; padding:10px 12px; margin-bottom:16px;
+    font-size:11px;
 }
-.diff-dots { display: flex; gap: 4px; margin-bottom: 14px; }
-.diff-dot  { width: 7px; height: 7px; border-radius: 50%; background: rgba(30,41,59,0.8); }
-.diff-dot.on { background: #7c3aed; }
-.role-desc { font-size: 13px; color: #475569 !important; flex-grow: 1; line-height: 1.55; margin-bottom: 18px; }
+.career-track .ct-label { color:#475569 !important; margin-bottom:5px; letter-spacing:0.3px; }
+.career-steps { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.cs { color:#334155 !important; font-weight:600; font-size:10px; }
+.cs.active { color:#a78bfa !important; }
+.cs-arrow { color:#334155 !important; font-size:9px; }
 
 /* ── Start button ──────────────────────────────────────────────── */
 .start-btn {
-    background: linear-gradient(90deg,#4f46e5,#7c3aed);
-    border: none; border-radius: 12px;
-    color: #fff !important; font-weight: 700; font-size: 14px;
-    padding: 12px 16px; text-decoration: none; text-align: center;
-    display: block; cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-    position: relative; overflow: hidden;
+    background:linear-gradient(90deg,#4f46e5,#7c3aed);
+    border:none; border-radius:12px;
+    color:#fff !important; font-weight:700; font-size:14px;
+    padding:12px 16px; text-decoration:none; text-align:center;
+    display:block; cursor:pointer;
+    transition:opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    position:relative; overflow:hidden;
 }
-.start-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
-.start-btn:active { transform: scale(0.98); }
-.start-btn.loading { pointer-events: none; opacity: 0.75; }
-.btn-text { transition: opacity 0.2s; }
+.start-btn:hover { opacity:0.9; transform:translateY(-1px); box-shadow:0 6px 20px rgba(124,58,237,0.4); }
+.start-btn:active { transform:scale(0.98); }
+.start-btn.loading { pointer-events:none; opacity:0.75; }
+.btn-text { transition:opacity 0.2s; }
 .btn-spinner {
-    display: none; position: absolute; inset: 0;
-    align-items: center; justify-content: center; gap: 6px; font-size: 13px;
+    display:none; position:absolute; inset:0;
+    align-items:center; justify-content:center; gap:6px;
 }
-.start-btn.loading .btn-text    { opacity: 0; }
-.start-btn.loading .btn-spinner { display: flex; }
+.start-btn.loading .btn-text    { opacity:0; }
+.start-btn.loading .btn-spinner { display:flex; }
 .spin-dot {
-    width: 6px; height: 6px; background: #fff; border-radius: 50%;
-    animation: sd 0.9s infinite ease-in-out;
+    width:6px; height:6px; background:#fff; border-radius:50%;
+    animation:sd 0.9s infinite ease-in-out;
 }
-.spin-dot:nth-child(2) { animation-delay: 0.15s; }
-.spin-dot:nth-child(3) { animation-delay: 0.30s; }
+.spin-dot:nth-child(2) { animation-delay:0.15s; }
+.spin-dot:nth-child(3) { animation-delay:0.30s; }
 @keyframes sd { 0%,80%,100%{transform:scale(0.5);opacity:0.4} 40%{transform:scale(1);opacity:1} }
 </style>
 
-<!-- Full-screen loading overlay -->
+<!-- Loading overlay -->
 <div id="loadingOverlay" style="
     display:none; position:fixed; inset:0; z-index:9999;
-    background:rgba(5,8,20,0.93); backdrop-filter:blur(10px);
+    background:rgba(5,8,20,0.94); backdrop-filter:blur(12px);
     flex-direction:column; align-items:center; justify-content:center; gap:18px;">
-    <div style="font-size:40px;animation:float 2s ease-in-out infinite;">🤖</div>
+    <div style="font-size:44px;">🤖</div>
     <div style="font-size:20px;font-weight:800;color:#a78bfa !important;">Preparing your AI Interviewer…</div>
     <div style="display:flex;gap:8px;">
         <div class="spin-dot" style="width:10px;height:10px;background:#7c3aed;"></div>
@@ -162,16 +160,16 @@
 <div class="career-wrap">
 
     <div class="career-hero">
-        <div class="eyebrow">🎮 CHOOSE YOUR CAREER PATH</div>
-        <h1>Select Your Interview Role</h1>
-        <p>Pick a specialisation — XP earned is tracked per domain and builds your career progression</p>
+        <div class="eyebrow">🚀 CHOOSE YOUR ENGINEERING PATH</div>
+        <h1>Select Your Career Track</h1>
+        <p>Each track builds domain-specific skills. XP is earned by answer quality — not by clicking.</p>
     </div>
 
     <div class="stats-bar">
-        <div class="stat-item"><div class="val">{{ roles|length }}</div><div class="lbl">CAREER PATHS</div></div>
+        <div class="stat-item"><div class="val">{{ roles|length }}</div><div class="lbl">CAREER TRACKS</div></div>
         <div class="stat-item"><div class="val">8</div><div class="lbl">QUESTIONS</div></div>
-        <div class="stat-item"><div class="val">AI</div><div class="lbl">POWERED</div></div>
-        <div class="stat-item"><div class="val">∞</div><div class="lbl">RETAKES</div></div>
+        <div class="stat-item"><div class="val">5</div><div class="lbl">CAREER LEVELS</div></div>
+        <div class="stat-item"><div class="val">AI</div><div class="lbl">EVALUATED</div></div>
     </div>
 
     <div class="row g-4">
@@ -180,108 +178,205 @@
 
             {% if "Security" in role.name or "Cyber" in role.name %}
             <div class="role-card rc-red">
-                <span class="xp-badge">🔒 SECURITY XP</span>
+                <span class="domain-label">� Security Engineering</span>
                 <div class="role-icon-wrap">🔒</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">SECURITY</span>
+                <div class="career-path-label">Security Engineering Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Analyst</span><span class="cs-arrow">›</span>
+                        <span class="cs">Engineer</span><span class="cs-arrow">›</span>
+                        <span class="cs">Senior</span><span class="cs-arrow">›</span>
+                        <span class="cs">Architect</span>
+                    </div>
+                </div>
 
             {% elif "Data Analyst" in role.name %}
             <div class="role-card rc-green">
-                <span class="xp-badge">📊 DATA XP</span>
+                <span class="domain-label">📊 Data Analytics</span>
                 <div class="role-icon-wrap">📊</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">ANALYTICS</span>
+                <div class="career-path-label">Data Analytics Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Analyst</span><span class="cs-arrow">›</span>
+                        <span class="cs">Sr. Analyst</span><span class="cs-arrow">›</span>
+                        <span class="cs">Scientist</span><span class="cs-arrow">›</span>
+                        <span class="cs">Principal</span>
+                    </div>
+                </div>
 
             {% elif "ML" in role.name or "AI" in role.name %}
             <div class="role-card rc-amber">
-                <span class="xp-badge">🤖 AI/ML XP</span>
+                <span class="domain-label">🤖 AI / ML Engineering</span>
                 <div class="role-icon-wrap">🤖</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">AI / ML</span>
+                <div class="career-path-label">AI / ML Engineering Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">ML Engineer</span><span class="cs-arrow">›</span>
+                        <span class="cs">Senior</span><span class="cs-arrow">›</span>
+                        <span class="cs">Research Lead</span>
+                    </div>
+                </div>
 
             {% elif "DevOps" in role.name %}
             <div class="role-card rc-orange">
-                <span class="xp-badge">⚙️ DEVOPS XP</span>
+                <span class="domain-label">⚙ DevOps Engineering</span>
                 <div class="role-icon-wrap">⚙️</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">DEVOPS</span>
+                <div class="career-path-label">DevOps Engineering Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">DevOps Eng.</span><span class="cs-arrow">›</span>
+                        <span class="cs">Senior</span><span class="cs-arrow">›</span>
+                        <span class="cs">Platform Lead</span>
+                    </div>
+                </div>
 
             {% elif "Cloud" in role.name %}
             <div class="role-card rc-sky">
-                <span class="xp-badge">☁️ CLOUD XP</span>
+                <span class="domain-label">☁ Cloud Engineering</span>
                 <div class="role-icon-wrap">☁️</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">CLOUD</span>
+                <div class="career-path-label">Cloud Engineering Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Cloud Eng.</span><span class="cs-arrow">›</span>
+                        <span class="cs">Architect</span><span class="cs-arrow">›</span>
+                        <span class="cs">Principal</span>
+                    </div>
+                </div>
 
             {% elif "Frontend" in role.name %}
             <div class="role-card rc-pink">
-                <span class="xp-badge">🎨 FRONTEND XP</span>
+                <span class="domain-label">🎨 Frontend Engineering</span>
                 <div class="role-icon-wrap">🎨</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">FRONTEND</span>
+                <div class="career-path-label">Frontend Engineering Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Frontend Dev</span><span class="cs-arrow">›</span>
+                        <span class="cs">Engineer</span><span class="cs-arrow">›</span>
+                        <span class="cs">UI Architect</span>
+                    </div>
+                </div>
 
             {% elif "Backend" in role.name %}
             <div class="role-card rc-purple">
-                <span class="xp-badge">🔧 BACKEND XP</span>
+                <span class="domain-label">⚡ Backend Engineering</span>
                 <div class="role-icon-wrap">🔧</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">BACKEND</span>
+                <div class="career-path-label">Backend Engineering Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Backend Dev</span><span class="cs-arrow">›</span>
+                        <span class="cs">Engineer</span><span class="cs-arrow">›</span>
+                        <span class="cs">Principal</span>
+                    </div>
+                </div>
 
             {% elif "Reliability" in role.name %}
             <div class="role-card rc-lime">
-                <span class="xp-badge">🛡️ DEVOPS XP</span>
+                <span class="domain-label">🛡 Site Reliability</span>
                 <div class="role-icon-wrap">🛡️</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">SRE</span>
+                <div class="career-path-label">Site Reliability Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">SRE</span><span class="cs-arrow">›</span>
+                        <span class="cs">Senior SRE</span><span class="cs-arrow">›</span>
+                        <span class="cs">Platform Lead</span>
+                    </div>
+                </div>
 
             {% elif "Blockchain" in role.name %}
             <div class="role-card rc-gold">
-                <span class="xp-badge">⛓️ WEB3 XP</span>
+                <span class="domain-label">🔗 Web3 Engineering</span>
                 <div class="role-icon-wrap">⛓️</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">WEB3</span>
+                <div class="career-path-label">Web3 / Blockchain Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Blockchain Dev</span><span class="cs-arrow">›</span>
+                        <span class="cs">Smart Contract Eng.</span><span class="cs-arrow">›</span>
+                        <span class="cs">Protocol Eng.</span>
+                    </div>
+                </div>
 
             {% elif "Scientist" in role.name %}
             <div class="role-card rc-teal">
-                <span class="xp-badge">🔬 DATA XP</span>
+                <span class="domain-label">🔬 Data Science</span>
                 <div class="role-icon-wrap">🔬</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">DATA SCIENCE</span>
+                <div class="career-path-label">Data Science Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Data Scientist</span><span class="cs-arrow">›</span>
+                        <span class="cs">Senior</span><span class="cs-arrow">›</span>
+                        <span class="cs">Principal</span>
+                    </div>
+                </div>
 
             {% elif "Full Stack" in role.name %}
             <div class="role-card rc-blue">
-                <span class="xp-badge">🌐 FULL STACK XP</span>
+                <span class="domain-label">🌐 Full Stack Engineering</span>
                 <div class="role-icon-wrap">🌐</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">FULL STACK</span>
+                <div class="career-path-label">Full Stack Engineering Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Full Stack Dev</span><span class="cs-arrow">›</span>
+                        <span class="cs">Engineer</span><span class="cs-arrow">›</span>
+                        <span class="cs">Tech Lead</span>
+                    </div>
+                </div>
 
             {% else %}
             <div class="role-card rc-purple">
-                <span class="xp-badge">💻 BACKEND XP</span>
+                <span class="domain-label">💻 Software Engineering</span>
                 <div class="role-icon-wrap">💻</div>
                 <div class="role-name">{{ role.name }}</div>
-                <span class="role-tag">DEVELOPER</span>
+                <div class="career-path-label">Software Engineering Path</div>
                 <div class="diff-dots"><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot on"></div><div class="diff-dot"></div><div class="diff-dot"></div></div>
+                <div class="career-track">
+                    <div class="ct-label">CAREER PROGRESSION</div>
+                    <div class="career-steps">
+                        <span class="cs active">Junior Dev</span><span class="cs-arrow">›</span>
+                        <span class="cs">Engineer</span><span class="cs-arrow">›</span>
+                        <span class="cs">Senior</span>
+                    </div>
+                </div>
             {% endif %}
 
                 <div class="role-desc">{{ role.description }}</div>
 
                 <a href="{% url 'start_interview' role.id %}?restart=true"
-                   class="start-btn"
-                   data-role="{{ role.name }}"
+                   class="start-btn" data-role="{{ role.name }}"
                    onclick="startInterview(this)">
-                    <span class="btn-text">Begin Interview →</span>
+                    <span class="btn-text">Start Interview →</span>
                     <span class="btn-spinner">
                         <div class="spin-dot"></div>
                         <div class="spin-dot"></div>
@@ -289,11 +384,10 @@
                     </span>
                 </a>
 
-            </div><!-- .role-card -->
-        </div><!-- .col -->
+            </div>
+        </div>
         {% endfor %}
     </div>
-
 </div>
 
 <script>
@@ -312,13 +406,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function startInterview(btn) {
     btn.classList.add("loading");
-
     var overlay = document.getElementById("loadingOverlay");
     var msg     = document.getElementById("loadingMsg");
     var role    = btn.getAttribute("data-role") || "your role";
-
     overlay.style.display = "flex";
-
     var msgs = [
         "Generating questions for " + role + "…",
         "Calibrating AI difficulty levels…",
@@ -330,10 +421,7 @@ function startInterview(btn) {
         idx = (idx + 1) % msgs.length;
         msg.textContent = msgs[idx];
     }, 900);
-
     window.addEventListener("beforeunload", function () { clearInterval(interval); });
-
-    /* Safety timeout — unhide if navigation stalls */
     setTimeout(function () {
         clearInterval(interval);
         overlay.style.display = "none";
