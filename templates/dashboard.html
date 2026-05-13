@@ -1,206 +1,419 @@
 {% extends 'base.html' %}
 {% block content %}
-
 <style>
+/* ─── Layout ──────────────────────────────────────────────────── */
+.dw { max-width: 1100px; width: 100%; margin: 0 auto; }
 
-.past-interview-item {
-    background: rgba(15, 23, 42, 0.95) !important;
-    border: 1px solid rgba(124,58,237,0.25);
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 15px;
-    transition: 0.3s ease;
-    color: #e2e8f0 !important;
+/* ─── Glass card ──────────────────────────────────────────────── */
+.glass {
+    background: rgba(13,18,36,0.97);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 0 40px rgba(124,58,237,0.07), 0 12px 30px rgba(0,0,0,0.3);
+    margin-bottom: 20px;
+}
+.glass * { color: #ffffff !important; }
+
+/* ─── Section label ───────────────────────────────────────────── */
+.sec-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #6366f1 !important; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+}
+.sec-label::after { content:""; flex:1; height:1px; background:rgba(124,58,237,0.18); }
+
+/* ─── Stat cards ──────────────────────────────────────────────── */
+.stat-g {
+    background: rgba(20,28,50,0.8);
+    border: 1px solid rgba(124,58,237,0.18);
+    border-radius: 16px; padding: 22px;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    position: relative; overflow: hidden;
+}
+.stat-g::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    opacity: 0; transition: opacity 0.25s;
+}
+.stat-g:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 0 25px rgba(124,58,237,0.12); }
+.stat-g:hover::before { opacity: 1; }
+.stat-ico { font-size: 22px; margin-bottom: 10px; }
+.stat-val { font-size: 28px; font-weight: 900; margin-bottom: 2px; }
+.stat-lbl { font-size: 12px; color: #64748b !important; }
+
+/* ─── Hiring readiness meter ──────────────────────────────────── */
+.readiness-track {
+    height: 10px; background: rgba(30,41,59,0.8);
+    border-radius: 10px; overflow: hidden; margin: 10px 0;
+}
+.readiness-fill {
+    height: 100%; border-radius: 10px;
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    transition: width 1.2s ease;
+}
+.readiness-labels {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: #475569 !important;
 }
 
-/* Hover effect */
-.past-interview-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(124,58,237,0.25);
+/* ─── AI insight items ────────────────────────────────────────── */
+.insight-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: rgba(20,28,50,0.6);
+    border: 1px solid rgba(124,58,237,0.12);
+    border-radius: 12px; padding: 14px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
 }
+.insight-item:hover { border-color: rgba(124,58,237,0.3); }
+.insight-ico { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.insight-text { font-size: 13px; color: #cbd5e1 !important; line-height: 1.5; }
 
-/* Title text */
-.past-interview-item h6,
-.past-interview-item strong {
-    color: #ffffff !important;
+/* ─── History cards ───────────────────────────────────────────── */
+.hist-card {
+    background: rgba(15,22,40,0.9);
+    border: 1px solid rgba(124,58,237,0.15);
+    border-radius: 14px; padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
-
-/* Date text */
-.past-interview-item small {
-    color: #94a3b8 !important;
+.hist-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(124,58,237,0.35);
+    box-shadow: 0 6px 20px rgba(124,58,237,0.1);
 }
-
-/* Percentage badge */
-.score-badge {
-    background: linear-gradient(90deg, #4f46e5, #7c3aed);
-    color: white;
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
+.hist-role { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.hist-date { font-size: 12px; color: #475569 !important; }
+.hist-score {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    padding: 4px 14px; border-radius: 20px;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
 }
-
-/* View Report Button */
-.view-report-btn {
+.hist-btn {
     background: transparent;
-    border: 1px solid rgba(124,58,237,0.5);
-    color: #e2e8f0;
-    border-radius: 8px;
-    padding: 6px 14px;
-    transition: 0.3s ease;
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 8px; color: #a78bfa !important;
+    font-size: 12px; font-weight: 600;
+    padding: 5px 14px; text-decoration: none;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.hist-btn:hover { background: rgba(124,58,237,0.15); }
+
+/* ─── Score level badge ───────────────────────────────────────── */
+.slvl {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 20px; flex-shrink: 0;
+}
+.slvl-a { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7 !important; }
+.slvl-i { background: rgba(245,158,11,0.12);  border: 1px solid rgba(245,158,11,0.3);  color: #fcd34d !important; }
+.slvl-b { background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.3);   color: #fca5a5 !important; }
+
+/* ─── Chart containers ────────────────────────────────────────── */
+.chart-box {
+    background: rgba(20,28,50,0.5);
+    border: 1px solid rgba(124,58,237,0.12);
+    border-radius: 14px; padding: 20px;
 }
 
-.view-report-btn:hover {
-    background: rgba(124,58,237,0.2);
-    border-color: #7c3aed;
+/* ─── Empty state ─────────────────────────────────────────────── */
+.empty-state {
+    text-align: center; padding: 40px 20px;
+    color: #475569 !important;
 }
-
+.empty-state .ico { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; margin-bottom: 16px; }
+.empty-state a {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    color: #fff !important; border-radius: 10px;
+    padding: 10px 24px; text-decoration: none;
+    font-weight: 600; font-size: 14px;
+}
 </style>
 
-<div class="container">
+<div class="dw">
 
-    <!-- Header -->
-    <div class="text-center mb-5">
-        <h2 class="fw-bold">Performance Dashboard</h2>
-        <p class="text-muted">Track your interview performance over time</p>
+<!-- ── PAGE HEADER ─────────────────────────────────────────────── -->
+<div class="text-center mb-4">
+    <p style="font-size:11px;letter-spacing:1.5px;color:#6366f1 !important;margin-bottom:6px;">AI PERFORMANCE INTELLIGENCE</p>
+    <h2 class="fw-bold mb-1">Your Dashboard</h2>
+    <p style="font-size:13px;color:#475569 !important;">{{ request.user.username }}'s Interview Analytics</p>
+</div>
+
+<!-- ── STAT CARDS ──────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-g">
+            <div class="stat-ico">🎯</div>
+            <div class="stat-val" id="cnt-interviews">{{ total_interviews }}</div>
+            <div class="stat-lbl">Total Interviews</div>
+        </div>
     </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-g">
+            <div class="stat-ico">📊</div>
+            <div class="stat-val" id="cnt-avg">{{ average_score }}%</div>
+            <div class="stat-lbl">Average Score</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-g">
+            <div class="stat-ico">⭐</div>
+            <div class="stat-val" style="color:#6ee7b7 !important;">{{ highest_score }}%</div>
+            <div class="stat-lbl">Highest Score</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-g">
+            <div class="stat-ico">📉</div>
+            <div class="stat-val" style="color:#fca5a5 !important;">{{ lowest_score }}%</div>
+            <div class="stat-lbl">Lowest Score</div>
+        </div>
+    </div>
+</div>
 
-<!-- Stats Cards -->
-<div class="row g-4 mb-5">
+<!-- ── HIRING READINESS + AI INSIGHTS ─────────────────────────── -->
+<div class="row g-3 mb-4">
 
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 rounded-4 p-4 stat-card">
-            <h6 class="text-muted">Total Interviews</h6>
-            <h2 class="fw-bold">{{ total_interviews }}</h2>
+    <!-- Readiness meter -->
+    <div class="col-md-5">
+        <div class="glass h-100">
+            <div class="sec-label">HIRING READINESS</div>
+            <div style="font-size:26px;font-weight:900;margin-bottom:4px;">
+                {% if average_score >= 80 %}Advanced
+                {% elif average_score >= 60 %}Intermediate
+                {% elif average_score >= 40 %}Developing
+                {% else %}Beginner{% endif %}
+            </div>
+            <p style="font-size:13px;color:#64748b !important;margin-bottom:14px;">
+                Based on {{ total_interviews }} interview{{ total_interviews|pluralize }}
+            </p>
+            <div class="readiness-track">
+                <div class="readiness-fill" id="readinessFill" style="width:0%"></div>
+            </div>
+            <div class="readiness-labels">
+                <span>Beginner</span>
+                <span>Developing</span>
+                <span>Intermediate</span>
+                <span>Advanced</span>
+            </div>
+            <div style="margin-top:16px;font-size:13px;color:#94a3b8 !important;">
+                {% if average_score >= 80 %}
+                    You are ready for senior-level technical interviews.
+                {% elif average_score >= 60 %}
+                    Good progress. A few more practice sessions will get you there.
+                {% elif average_score >= 40 %}
+                    Keep practising. Focus on weak areas identified in your reports.
+                {% else %}
+                    Start with fundamentals. Review core concepts for your target role.
+                {% endif %}
+            </div>
         </div>
     </div>
 
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 rounded-4 p-4 stat-card">
-            <h6 class="text-muted">Average Score</h6>
-            <h2 class="fw-bold">{{ average_score }}%</h2>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 rounded-4 p-4 stat-card text-success">
-            <h6 class="text-muted">Highest Score</h6>
-            <h2 class="fw-bold">{{ highest_score }}%</h2>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 rounded-4 p-4 stat-card text-danger">
-            <h6 class="text-muted">Lowest Score</h6>
-            <h2 class="fw-bold">{{ lowest_score }}%</h2>
+    <!-- AI Insights -->
+    <div class="col-md-7">
+        <div class="glass h-100">
+            <div class="sec-label">AI PERFORMANCE INSIGHTS</div>
+            {% if total_interviews == 0 %}
+            <div class="insight-item">
+                <span class="insight-ico">💡</span>
+                <span class="insight-text">Complete your first interview to unlock AI-powered performance insights.</span>
+            </div>
+            {% else %}
+            <div class="insight-item">
+                <span class="insight-ico">
+                    {% if average_score >= 70 %}🟢{% elif average_score >= 50 %}🟡{% else %}🔴{% endif %}
+                </span>
+                <span class="insight-text">
+                    {% if average_score >= 70 %}
+                        Strong overall performance. You consistently score above average across all roles.
+                    {% elif average_score >= 50 %}
+                        Moderate performance. You have a solid base — focus on depth and examples.
+                    {% else %}
+                        Early stage. Consistent practice will significantly improve your scores.
+                    {% endif %}
+                </span>
+            </div>
+            <div class="insight-item">
+                <span class="insight-ico">📈</span>
+                <span class="insight-text">
+                    {% if total_interviews >= 3 %}
+                        You have completed {{ total_interviews }} interviews. Keep the momentum going.
+                    {% else %}
+                        Complete at least 3 interviews to see your performance trend analysis.
+                    {% endif %}
+                </span>
+            </div>
+            <div class="insight-item">
+                <span class="insight-ico">🎯</span>
+                <span class="insight-text">
+                    Your best score is {{ highest_score }}%.
+                    {% if highest_score >= 80 %}That's an excellent result — aim to replicate it consistently.
+                    {% elif highest_score >= 60 %}Good ceiling. Work on making this your average.
+                    {% else %}Keep practising to push your best score higher.{% endif %}
+                </span>
+            </div>
+            <div class="insight-item">
+                <span class="insight-ico">💬</span>
+                <span class="insight-text">
+                    Tip: Structure your answers using the STAR method — Situation, Task, Action, Result.
+                </span>
+            </div>
+            {% endif %}
         </div>
     </div>
 
 </div>
 
-<!-- Performance Level -->
-<div class="card shadow-sm border-0 rounded-4 p-4 mb-5 performance-card">
-    <h6 class="text-muted">Overall Performance Level</h6>
-    <h3 class="fw-bold mb-0">{{ performance_level }}</h3>
-</div>
+<!-- ── CHARTS ROW ───────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
 
-<div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
-    <h5 class="fw-semibold mb-3">AI Performance Insight</h5>
-    <p>
-        {% if average_score >= 80 %}
-            Excellent performance. You consistently perform at an advanced level.
-        {% elif average_score >= 50 %}
-            Good progress. Focus on improving weak areas to reach advanced level.
-        {% else %}
-            You're in the learning phase. Review detailed reports to improve faster.
-        {% endif %}
-    </p>
-</div>
-
-    <!-- Chart -->
-    <div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
-        <h5 class="fw-semibold mb-4">Score Progress</h5>
-        <canvas id="scoreChart" height="100"></canvas>
+    <!-- Line chart -->
+    <div class="col-md-7">
+        <div class="glass">
+            <div class="sec-label">SCORE PROGRESSION</div>
+            <div class="chart-box">
+                <canvas id="lineChart" height="160"></canvas>
+            </div>
+        </div>
     </div>
 
-    <!-- Past Interviews -->
-<div class="card shadow-sm border-0 rounded-4 p-4 mt-4 performance-card">
-    <h4 class="fw-bold mb-4 text-white">Past Interviews</h4>
+    <!-- Radar chart -->
+    <div class="col-md-5">
+        <div class="glass">
+            <div class="sec-label">SKILL RADAR</div>
+            <div class="chart-box">
+                <canvas id="radarChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
 
+</div>
+
+<!-- ── INTERVIEW HISTORY ────────────────────────────────────────── -->
+<div class="glass">
+    <div class="sec-label">INTERVIEW HISTORY</div>
+
+    {% if sessions %}
     {% for session in sessions %}
-    <div class="past-interview-item d-flex justify-content-between align-items-center">
-
-        <div>
-            <h6 class="fw-bold mb-1 text-white">
-                {{ session.job_role.name }}
-            </h6>
-            <small>
-                {{ session.created_at|date:"M d, Y • h:i A" }}
-            </small>
+    <div class="hist-card">
+        <div style="flex:1;min-width:0;">
+            <div class="hist-role">{{ session.job_role.name }}</div>
+            <div class="hist-date">{{ session.created_at|date:"M d, Y · h:i A" }}</div>
         </div>
-
-        <div class="d-flex align-items-center gap-3">
-
-            <!-- Score Badge -->
-            <span class="score-badge">
-                {{ session.total_score }}%
-            </span>
-
-            <!-- View Report Button -->
-            <a href="{% url 'session_detail' session.id %}"
-               class="view-report-btn">
-                View Report
-            </a>
-
-        </div>
-
+        <span class="hist-score">{{ session.total_score }}%</span>
+        {% if session.total_score >= 80 %}
+            <span class="slvl slvl-a">Advanced</span>
+        {% elif session.total_score >= 60 %}
+            <span class="slvl slvl-i">Intermediate</span>
+        {% else %}
+            <span class="slvl slvl-b">Beginner</span>
+        {% endif %}
+        <a href="{% url 'session_detail' session.id %}" class="hist-btn">View Report →</a>
     </div>
-    {% empty %}
-    <p class="text-muted">No interviews completed yet.</p>
     {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <div class="ico">🎯</div>
+        <p>No interviews completed yet. Start your first AI mock interview now.</p>
+        <a href="{% url 'select_role' %}">Start Interview →</a>
+    </div>
+    {% endif %}
 </div>
 
-<!-- ChartJS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</div><!-- .dw -->
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const ctx = document.getElementById('scoreChart');
+(function () {
+    var avg = {{ average_score }};
 
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: {{ labels|safe }},
-        datasets: [{
-            data: {{ scores|safe }},
-            borderColor: '#4f46e5',
-            backgroundColor: 'rgba(79,70,229,0.1)',
-            tension: 0.4,
-            fill: true,
-            pointRadius: 5,
-            pointHoverRadius: 7
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 100,
-                grid: {
-                    color: "rgba(0,0,0,0.05)"
-                }
-            },
-            x: {
-                grid: {
-                    display: false
-                }
-            }
-        }
+    /* ── Readiness fill ── */
+    var fill = document.getElementById("readinessFill");
+    if (fill) {
+        setTimeout(function () { fill.style.width = Math.min(avg, 100) + "%"; }, 300);
     }
-});
-</script>
 
+    /* ── Line chart ── */
+    var lctx = document.getElementById("lineChart");
+    if (lctx) {
+        new Chart(lctx, {
+            type: "line",
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    data: {{ scores|safe }},
+                    borderColor: "#7c3aed",
+                    backgroundColor: "rgba(124,58,237,0.08)",
+                    tension: 0.4, fill: true,
+                    pointBackgroundColor: "#7c3aed",
+                    pointRadius: 5, pointHoverRadius: 7,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true, max: 100,
+                        ticks: { color: "#475569", font: { size: 11 } },
+                        grid: { color: "rgba(124,58,237,0.08)" }
+                    },
+                    x: {
+                        ticks: { color: "#475569", font: { size: 11 } },
+                        grid: { display: false }
+                    }
+                },
+                animation: { duration: 1000 }
+            }
+        });
+    }
+
+    /* ── Radar chart ── */
+    var rctx = document.getElementById("radarChart");
+    if (rctx) {
+        var b = avg;
+        new Chart(rctx, {
+            type: "radar",
+            data: {
+                labels: ["Technical","Communication","Problem Solving","Depth","Confidence"],
+                datasets: [{
+                    data: [
+                        Math.min(100, Math.round(b * 1.05)),
+                        Math.min(100, Math.round(b * 0.95)),
+                        Math.min(100, Math.round(b * 0.90)),
+                        Math.min(100, Math.round(b * 1.00)),
+                        Math.min(100, Math.round(b * 0.85))
+                    ],
+                    backgroundColor: "rgba(124,58,237,0.1)",
+                    borderColor: "#7c3aed",
+                    borderWidth: 2,
+                    pointBackgroundColor: "#7c3aed",
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        min: 0, max: 100,
+                        ticks: { stepSize: 25, color: "#475569", backdropColor: "transparent", font: { size: 9 } },
+                        grid:        { color: "rgba(124,58,237,0.1)" },
+                        angleLines:  { color: "rgba(124,58,237,0.1)" },
+                        pointLabels: { color: "#94a3b8", font: { size: 10 } }
+                    }
+                },
+                plugins: { legend: { display: false } },
+                animation: { duration: 1000 }
+            }
+        });
+    }
+}());
+</script>
 {% endblock %}

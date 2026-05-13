@@ -1,51 +1,106 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+.dw { max-width: 860px; width: 100%; margin: 0 auto; }
+.glass {
+    background: rgba(13,18,36,0.97);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 20px; padding: 28px;
+    box-shadow: 0 0 40px rgba(124,58,237,0.07), 0 12px 30px rgba(0,0,0,0.3);
+    margin-bottom: 20px;
+}
+.glass * { color: #ffffff !important; }
+.sec-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #6366f1 !important; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+}
+.sec-label::after { content:""; flex:1; height:1px; background:rgba(124,58,237,0.18); }
+.ans-card {
+    background: rgba(15,22,40,0.9);
+    border: 1px solid rgba(124,58,237,0.15);
+    border-radius: 14px; padding: 20px; margin-bottom: 14px;
+    transition: border-color 0.2s;
+}
+.ans-card:hover { border-color: rgba(124,58,237,0.35); }
+.ans-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.q-num { font-size:11px; font-weight:800; color:#6366f1 !important; letter-spacing:1px; }
+.score-pill {
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    padding: 3px 12px; border-radius: 20px; font-size:12px; font-weight:700;
+}
+.q-text { font-size:15px; font-weight:600; margin-bottom:12px; }
+.ans-box { background:rgba(8,12,24,0.7); border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+.box-lbl { font-size:10px; font-weight:700; letter-spacing:1px; color:#475569 !important; margin-bottom:6px; }
+.ans-box p { font-size:14px; color:#94a3b8 !important; margin:0; line-height:1.6; }
+.feedback-box {
+    background: rgba(79,70,229,0.07);
+    border-left: 3px solid #7c3aed;
+    border-radius: 0 10px 10px 0;
+    padding: 10px 14px;
+}
+.feedback-box p { font-size:14px; color:#e2e8f0 !important; margin:0; }
+.btn-back {
+    background: transparent;
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 10px; color: #a78bfa !important;
+    font-size: 14px; font-weight: 600;
+    padding: 10px 20px; text-decoration: none;
+    display: inline-block; transition: background 0.2s;
+}
+.btn-back:hover { background: rgba(124,58,237,0.12); }
+</style>
 
-<div class="container">
+<div class="dw">
 
-    <div class="card shadow-lg p-4 mb-4">
-        <h3 class="fw-bold">
-            {{ session.job_role.name }} - Interview Report
-        </h3>
-
-        <p class="text-muted">
-            {{ session.created_at|date:"d M Y, H:i" }}
-        </p>
-
-        <h4>
-            Final Score:
-            <span class="badge bg-dark">
-                {{ session.total_score }}%
-            </span>
-        </h4>
+<!-- Header -->
+<div class="glass">
+    <div class="sec-label">INTERVIEW REPORT</div>
+    <h3 class="fw-bold mb-1">{{ session.job_role.name }}</h3>
+    <p style="font-size:13px;color:#475569 !important;margin-bottom:16px;">
+        {{ session.created_at|date:"d M Y, H:i" }}
+    </p>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="font-size:28px;font-weight:900;">{{ session.total_score }}%</span>
+        {% if session.total_score >= 80 %}
+            <span style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7 !important;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;">Advanced</span>
+        {% elif session.total_score >= 60 %}
+            <span style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d !important;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;">Intermediate</span>
+        {% else %}
+            <span style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5 !important;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;">Beginner</span>
+        {% endif %}
     </div>
-
-    <h4 class="fw-bold mb-3">Detailed Answer Review</h4>
-
-    {% for ans in answers %}
-    <div class="card mb-3 shadow-sm">
-        <div class="card-body">
-
-            <h6 class="fw-bold">Question:</h6>
-            <p>{{ ans.question_text }}</p>
-
-            <h6 class="fw-bold">Your Answer:</h6>
-            <p>{{ ans.response }}</p>
-
-            <h6 class="fw-bold">
-                Score:
-                <span class="badge bg-dark">
-                    {{ ans.score }}/10
-                </span>
-            </h6>
-
-            <h6 class="fw-bold mt-2">Feedback:</h6>
-            <p>{{ ans.feedback }}</p>
-
-        </div>
-    </div>
-    {% endfor %}
-
 </div>
 
+<!-- Answers -->
+<div class="glass">
+    <div class="sec-label">DETAILED ANSWER REVIEW</div>
+
+    {% for ans in answers %}
+    <div class="ans-card">
+        <div class="ans-top">
+            <span class="q-num">QUESTION {{ forloop.counter }}</span>
+            <span class="score-pill">{{ ans.score }}/10</span>
+        </div>
+        <p class="q-text">{{ ans.question_text }}</p>
+        <div class="ans-box">
+            <div class="box-lbl">YOUR ANSWER</div>
+            <p>{{ ans.response }}</p>
+        </div>
+        {% if ans.feedback %}
+        <div class="feedback-box">
+            <div class="box-lbl" style="color:#7c3aed !important;">🤖 AI FEEDBACK</div>
+            <p>{{ ans.feedback }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Back button -->
+<div class="text-center">
+    <a href="{% url 'dashboard' %}" class="btn-back">← Back to Dashboard</a>
+</div>
+
+</div>
 {% endblock %}

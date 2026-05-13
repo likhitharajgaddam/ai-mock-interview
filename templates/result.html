@@ -1,339 +1,485 @@
 {% extends 'base.html' %}
 {% block content %}
-
 <style>
-/* ── Layout ─────────────────────────────────────────────── */
-.result-wrap { max-width: 820px; width: 100%; margin: 0 auto; }
+/* ─── Layout ──────────────────────────────────────────────────── */
+.rw { max-width: 860px; width: 100%; margin: 0 auto; }
 
-.result-card {
+/* ─── Base card ───────────────────────────────────────────────── */
+.glass {
     background: rgba(13,18,36,0.97);
-    border: 1px solid rgba(124,58,237,0.25);
+    border: 1px solid rgba(124,58,237,0.22);
     border-radius: 20px;
-    padding: 36px;
-    color: #ffffff;
-    box-shadow: 0 0 60px rgba(124,58,237,0.1), 0 20px 40px rgba(0,0,0,0.4);
+    padding: 32px;
+    box-shadow: 0 0 60px rgba(124,58,237,0.08), 0 20px 40px rgba(0,0,0,0.35);
+    margin-bottom: 20px;
 }
-.result-card * { color: #ffffff !important; }
+.glass * { color: #ffffff !important; }
 
-/* ── Score ring ─────────────────────────────────────────── */
-.score-ring-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 8px;
+/* ─── Section label ───────────────────────────────────────────── */
+.sec-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: #6366f1 !important; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
 }
-.score-ring {
-    position: relative;
-    width: 120px; height: 120px;
-    margin-bottom: 12px;
+.sec-label::after {
+    content: ""; flex: 1; height: 1px;
+    background: rgba(124,58,237,0.2);
 }
-.score-ring svg { transform: rotate(-90deg); }
-.ring-bg  { fill: none; stroke: rgba(30,41,59,0.8); stroke-width: 8; }
-.ring-val { fill: none; stroke-width: 8; stroke-linecap: round;
-            stroke: url(#ringGrad); transition: stroke-dashoffset 1s ease; }
-.score-num {
+
+/* ─── Score ring ──────────────────────────────────────────────── */
+.ring-wrap { display: flex; flex-direction: column; align-items: center; }
+.ring-box  { position: relative; width: 130px; height: 130px; margin-bottom: 14px; }
+.ring-box svg { transform: rotate(-90deg); }
+.ring-bg  { fill: none; stroke: rgba(30,41,59,0.9); stroke-width: 9; }
+.ring-fg  { fill: none; stroke-width: 9; stroke-linecap: round;
+            stroke: url(#rg); }
+.ring-num {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 26px; font-weight: 800;
+    font-size: 28px; font-weight: 900;
 }
 
-/* ── Level badge ────────────────────────────────────────── */
-.level-badge {
-    display: inline-block;
-    padding: 6px 20px; border-radius: 30px;
-    font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
-    margin-bottom: 24px;
+/* ─── Level badge ─────────────────────────────────────────────── */
+.lvl {
+    display: inline-block; padding: 5px 18px; border-radius: 30px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
 }
-.level-advanced     { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #6ee7b7 !important; }
-.level-intermediate { background: rgba(245,158,11,0.15);  border: 1px solid rgba(245,158,11,0.4);  color: #fcd34d !important; }
-.level-beginner     { background: rgba(239,68,68,0.15);   border: 1px solid rgba(239,68,68,0.4);   color: #fca5a5 !important; }
+.lvl-a { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #6ee7b7 !important; }
+.lvl-i { background: rgba(245,158,11,0.12);  border: 1px solid rgba(245,158,11,0.35);  color: #fcd34d !important; }
+.lvl-b { background: rgba(239,68,68,0.12);   border: 1px solid rgba(239,68,68,0.35);   color: #fca5a5 !important; }
 
-/* ── Radar chart ────────────────────────────────────────── */
-.radar-wrap {
-    background: rgba(30,41,59,0.4);
+/* ─── Stat mini cards ─────────────────────────────────────────── */
+.mini-stat {
+    background: rgba(30,41,59,0.5);
     border: 1px solid rgba(124,58,237,0.15);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 24px;
+    border-radius: 14px; padding: 16px;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s;
 }
+.mini-stat:hover { border-color: rgba(124,58,237,0.4); transform: translateY(-3px); }
+.mini-stat .val { font-size: 22px; font-weight: 800; }
+.mini-stat .lbl { font-size: 11px; color: #64748b !important; margin-top: 2px; }
 
-/* ── Answer cards ───────────────────────────────────────── */
+/* ─── Hire box ────────────────────────────────────────────────── */
+.hire {
+    border-radius: 14px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+}
+.hire-y { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); }
+.hire-m { background: rgba(245,158,11,0.08);  border: 1px solid rgba(245,158,11,0.3); }
+.hire-n { background: rgba(239,68,68,0.08);   border: 1px solid rgba(239,68,68,0.3); }
+.hire-ico { font-size: 26px; flex-shrink: 0; }
+.hire-ttl { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.hire-sub { font-size: 12px; color: #94a3b8 !important; margin: 0; }
+
+/* ─── Answer card ─────────────────────────────────────────────── */
 .ans-card {
-    background: rgba(20,28,50,0.8);
+    background: rgba(15,22,40,0.9);
     border: 1px solid rgba(124,58,237,0.18);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 14px;
-    transition: border-color 0.2s;
+    border-radius: 16px; padding: 22px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
-.ans-card:hover { border-color: rgba(124,58,237,0.4); }
-
-.ans-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+.ans-card:hover {
+    border-color: rgba(124,58,237,0.4);
+    box-shadow: 0 0 20px rgba(124,58,237,0.08);
 }
-.q-label { font-size: 12px; font-weight: 700; color: #a78bfa !important; letter-spacing: 0.5px; }
+.ans-top {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 12px;
+}
+.q-num { font-size: 11px; font-weight: 800; color: #6366f1 !important; letter-spacing: 1px; }
 .score-pill {
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
     padding: 3px 12px; border-radius: 20px;
     font-size: 12px; font-weight: 700;
 }
+.q-text { font-size: 15px; font-weight: 600; margin-bottom: 12px; line-height: 1.5; }
 
-.q-text { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
-
-.ans-text-box {
-    background: rgba(15,23,42,0.7);
-    border-radius: 8px; padding: 10px 14px;
-    margin-bottom: 10px;
+/* answer text box */
+.ans-box {
+    background: rgba(8,12,24,0.7);
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 12px;
 }
-.ans-text-box .label { font-size: 11px; color: #475569 !important; margin-bottom: 4px; }
-.ans-text-box p { font-size: 14px; color: #cbd5e1 !important; margin: 0; }
+.box-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #475569 !important; margin-bottom: 6px; }
+.ans-box p { font-size: 14px; color: #94a3b8 !important; margin: 0; line-height: 1.6; }
 
-.feedback-box {
+/* score mini bars */
+.score-bars { margin-bottom: 14px; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.bar-lbl { font-size: 11px; color: #64748b !important; width: 130px; flex-shrink: 0; }
+.bar-track {
+    flex: 1; height: 5px; background: rgba(30,41,59,0.8);
+    border-radius: 5px; overflow: hidden;
+}
+.bar-fill {
+    height: 100%; border-radius: 5px;
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    transition: width 1s ease;
+}
+.bar-pct { font-size: 11px; color: #a78bfa !important; width: 34px; text-align: right; flex-shrink: 0; }
+
+/* feedback sections */
+.fb-section { margin-bottom: 10px; }
+.fb-title { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; margin-bottom: 6px; }
+.fb-title.str { color: #6ee7b7 !important; }
+.fb-title.imp { color: #fcd34d !important; }
+.fb-title.tip { color: #93c5fd !important; }
+.fb-item {
+    font-size: 13px; color: #cbd5e1 !important;
+    padding: 5px 10px; border-radius: 8px;
+    margin-bottom: 4px; display: flex; align-items: flex-start; gap: 6px;
+}
+.fb-item.str { background: rgba(16,185,129,0.07); }
+.fb-item.imp { background: rgba(245,158,11,0.07); }
+.fb-item.tip { background: rgba(59,130,246,0.07); }
+
+/* interviewer impression */
+.impression {
     background: rgba(79,70,229,0.08);
     border-left: 3px solid #7c3aed;
-    border-radius: 0 8px 8px 0;
-    padding: 10px 14px;
+    border-radius: 0 10px 10px 0;
+    padding: 10px 14px; margin-top: 10px;
+    font-size: 13px; font-style: italic;
+    color: #e2e8f0 !important;
 }
-.feedback-box .label { font-size: 11px; color: #7c3aed !important; margin-bottom: 4px; font-weight: 700; }
-.feedback-box p { font-size: 14px; color: #e2e8f0 !important; margin: 0; }
 
-/* ── Summary box ────────────────────────────────────────── */
+/* skill tags */
+.skill-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.stag {
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 20px; letter-spacing: 0.3px;
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #a5b4fc !important;
+}
+
+/* ─── Summary ─────────────────────────────────────────────────── */
 .summary-box {
-    background: rgba(79,70,229,0.08);
-    border: 1px solid rgba(124,58,237,0.2);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 24px;
+    background: rgba(79,70,229,0.07);
+    border: 1px solid rgba(124,58,237,0.18);
+    border-radius: 14px; padding: 20px;
 }
 
-/* ── Hiring recommendation ──────────────────────────────── */
-.hire-box {
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-.hire-yes  { background: rgba(16,185,129,0.1);  border: 1px solid rgba(16,185,129,0.3); }
-.hire-maybe{ background: rgba(245,158,11,0.1);   border: 1px solid rgba(245,158,11,0.3); }
-.hire-no   { background: rgba(239,68,68,0.1);    border: 1px solid rgba(239,68,68,0.3); }
-.hire-icon { font-size: 28px; }
-.hire-title{ font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-.hire-desc { font-size: 13px; color: #94a3b8 !important; margin: 0; }
-
-/* ── Action buttons ─────────────────────────────────────── */
-.btn-primary-grad {
+/* ─── Buttons ─────────────────────────────────────────────────── */
+.btn-g {
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
     border: none; border-radius: 12px;
     color: #fff !important; font-weight: 700;
-    padding: 14px 20px; text-decoration: none;
+    padding: 14px; text-decoration: none;
     display: block; text-align: center;
     transition: opacity 0.2s, transform 0.2s;
 }
-.btn-primary-grad:hover { opacity: 0.88; transform: translateY(-2px); }
-
-.btn-outline-grad {
+.btn-g:hover { opacity: 0.88; transform: translateY(-2px); }
+.btn-o {
     background: transparent;
-    border: 1px solid rgba(124,58,237,0.45);
-    border-radius: 12px;
-    color: #ffffff !important; font-weight: 600;
-    padding: 14px 20px; text-decoration: none;
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 12px; color: #fff !important; font-weight: 600;
+    padding: 14px; text-decoration: none;
     display: block; text-align: center;
     transition: background 0.2s, border-color 0.2s;
 }
-.btn-outline-grad:hover { background: rgba(124,58,237,0.15); border-color: #7c3aed; }
-
-hr.divider { border-color: rgba(124,58,237,0.15); margin: 24px 0; }
+.btn-o:hover { background: rgba(124,58,237,0.12); border-color: #7c3aed; }
 </style>
 
-<div class="result-wrap">
-<div class="result-card">
+<div class="rw">
 
-    <!-- Header -->
+<!-- ── HEADER + SCORE ──────────────────────────────────────────── -->
+<div class="glass">
     <div class="text-center mb-4">
-        <p style="color:#64748b !important; font-size:13px; margin-bottom:6px; letter-spacing:1px;">
-            INTERVIEW COMPLETE
-        </p>
+        <p style="font-size:11px;letter-spacing:1.5px;color:#6366f1 !important;margin-bottom:6px;">TECHNICAL ASSESSMENT REPORT</p>
         <h2 class="fw-bold mb-1">{{ role.name }}</h2>
-        <p style="color:#64748b !important; font-size:13px;">Technical Assessment Report</p>
+        <p style="font-size:13px;color:#475569 !important;">AI-Powered Interview Analysis</p>
     </div>
 
-    <!-- Score ring -->
-    <div class="score-ring-wrap">
-        <div class="score-ring">
-            <svg viewBox="0 0 120 120" width="120" height="120">
+    <!-- Score ring + level -->
+    <div class="ring-wrap mb-4">
+        <div class="ring-box">
+            <svg viewBox="0 0 130 130" width="130" height="130">
                 <defs>
-                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%"   stop-color="#4f46e5"/>
+                    <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#4f46e5"/>
                         <stop offset="100%" stop-color="#7c3aed"/>
                     </linearGradient>
                 </defs>
-                <circle class="ring-bg"  cx="60" cy="60" r="52"/>
-                <circle class="ring-val" cx="60" cy="60" r="52"
-                    stroke-dasharray="326.7"
+                <circle class="ring-bg" cx="65" cy="65" r="56"/>
+                <circle class="ring-fg" cx="65" cy="65" r="56"
+                    stroke-dasharray="351.9"
                     stroke-dashoffset="{{ ring_offset }}"
                     id="ringCircle"/>
             </svg>
-            <div class="score-num">{{ percentage }}%</div>
+            <div class="ring-num">{{ percentage }}%</div>
         </div>
-
-        <!-- Level badge -->
         {% if percentage >= 80 %}
-            <span class="level-badge level-advanced">⭐ Advanced Level</span>
+            <span class="lvl lvl-a">⭐ Advanced Level</span>
         {% elif percentage >= 60 %}
-            <span class="level-badge level-intermediate">📈 Intermediate Level</span>
+            <span class="lvl lvl-i">📈 Intermediate Level</span>
         {% else %}
-            <span class="level-badge level-beginner">🌱 Beginner Level</span>
+            <span class="lvl lvl-b">🌱 Beginner Level</span>
         {% endif %}
+    </div>
+
+    <!-- Mini stats row -->
+    <div class="row g-3 mb-4">
+        <div class="col-4">
+            <div class="mini-stat">
+                <div class="val">{{ answers|length }}</div>
+                <div class="lbl">Questions</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="mini-stat">
+                <div class="val" id="avgScore">—</div>
+                <div class="lbl">Avg Score</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="mini-stat">
+                <div class="val" id="topScore">—</div>
+                <div class="lbl">Best Answer</div>
+            </div>
+        </div>
     </div>
 
     <!-- Radar chart -->
-    <div class="radar-wrap">
-        <h6 class="fw-bold mb-3" style="font-size:13px; color:#a78bfa !important; letter-spacing:0.5px;">
-            PERFORMANCE ANALYTICS
-        </h6>
-        <canvas id="radarChart" height="220"></canvas>
-    </div>
+    <div class="sec-label">PERFORMANCE ANALYTICS</div>
+    <canvas id="radarChart" height="200" style="margin-bottom:20px;"></canvas>
 
     <!-- Hiring recommendation -->
     {% if percentage >= 75 %}
-    <div class="hire-box hire-yes">
-        <div class="hire-icon">✅</div>
+    <div class="hire hire-y">
+        <div class="hire-ico">✅</div>
         <div>
-            <div class="hire-title" style="color:#6ee7b7 !important;">Strong Hire Recommendation</div>
-            <p class="hire-desc">Candidate demonstrates solid technical knowledge and communication skills.</p>
+            <div class="hire-ttl" style="color:#6ee7b7 !important;">Strong Hire Recommendation</div>
+            <p class="hire-sub">Candidate demonstrates solid technical knowledge and clear communication.</p>
         </div>
     </div>
     {% elif percentage >= 50 %}
-    <div class="hire-box hire-maybe">
-        <div class="hire-icon">🔄</div>
+    <div class="hire hire-m">
+        <div class="hire-ico">🔄</div>
         <div>
-            <div class="hire-title" style="color:#fcd34d !important;">Consider with Follow-up</div>
-            <p class="hire-desc">Good potential shown. Recommend a second round focusing on weak areas.</p>
+            <div class="hire-ttl" style="color:#fcd34d !important;">Consider with Follow-up Round</div>
+            <p class="hire-sub">Good potential. Recommend a second round focused on weak areas.</p>
         </div>
     </div>
     {% else %}
-    <div class="hire-box hire-no">
-        <div class="hire-icon">📚</div>
+    <div class="hire hire-n">
+        <div class="hire-ico">📚</div>
         <div>
-            <div class="hire-title" style="color:#fca5a5 !important;">Not Ready — Keep Practising</div>
-            <p class="hire-desc">Focus on core concepts and hands-on projects before the next attempt.</p>
+            <div class="hire-ttl" style="color:#fca5a5 !important;">Not Ready — Keep Practising</div>
+            <p class="hire-sub">Focus on core concepts and hands-on projects before the next attempt.</p>
         </div>
     </div>
     {% endif %}
+</div>
 
-    <hr class="divider">
-
-    <!-- Detailed review -->
-    <h5 class="fw-bold mb-3" style="font-size:14px; letter-spacing:0.5px; color:#a78bfa !important;">
-        DETAILED REVIEW
-    </h5>
+<!-- ── DETAILED REVIEW ─────────────────────────────────────────── -->
+<div class="glass">
+    <div class="sec-label">DETAILED QUESTION ANALYSIS</div>
 
     {% for ans in answers %}
     <div class="ans-card">
-        <div class="ans-header">
-            <span class="q-label">QUESTION {{ forloop.counter }}</span>
+
+        <!-- Header row -->
+        <div class="ans-top">
+            <span class="q-num">QUESTION {{ forloop.counter }}</span>
             <span class="score-pill">{{ ans.score }}/10</span>
         </div>
+
+        <!-- Question -->
         <p class="q-text">{{ ans.question_text }}</p>
-        <div class="ans-text-box">
-            <div class="label">YOUR ANSWER</div>
+
+        <!-- Your answer -->
+        <div class="ans-box">
+            <div class="box-lbl">YOUR ANSWER</div>
             <p>{{ ans.response }}</p>
         </div>
+
+        <!-- Score breakdown bars (derived from score/10) -->
+        <div class="score-bars">
+            <div class="box-lbl">ANSWER QUALITY BREAKDOWN</div>
+            <div class="bar-row">
+                <span class="bar-lbl">Technical Accuracy</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:{{ ans.score }}0%"></div>
+                </div>
+                <span class="bar-pct">{{ ans.score }}0%</span>
+            </div>
+            <div class="bar-row">
+                <span class="bar-lbl">Communication</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:{% widthratio ans.score 10 95 %}%"></div>
+                </div>
+                <span class="bar-pct">{% widthratio ans.score 10 95 %}%</span>
+            </div>
+            <div class="bar-row">
+                <span class="bar-lbl">Depth</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:{% widthratio ans.score 10 85 %}%"></div>
+                </div>
+                <span class="bar-pct">{% widthratio ans.score 10 85 %}%</span>
+            </div>
+        </div>
+
+        <!-- AI Feedback structured -->
         {% if ans.feedback %}
-        <div class="feedback-box">
-            <div class="label">🤖 AI FEEDBACK</div>
-            <p>{{ ans.feedback }}</p>
+        <div class="box-lbl">AI ANALYSIS</div>
+
+        {% if ans.score >= 7 %}
+        <div class="fb-section">
+            <div class="fb-title str">✅ STRENGTHS</div>
+            <div class="fb-item str">✅ {{ ans.feedback|truncatewords:20 }}</div>
+        </div>
+        <div class="fb-section">
+            <div class="fb-title tip">📘 RECOMMENDATION</div>
+            <div class="fb-item tip">📘 Continue building on this strong foundation with real-world examples.</div>
+        </div>
+        {% elif ans.score >= 4 %}
+        <div class="fb-section">
+            <div class="fb-title str">✅ STRENGTHS</div>
+            <div class="fb-item str">✅ Partial understanding demonstrated.</div>
+        </div>
+        <div class="fb-section">
+            <div class="fb-title imp">⚠ IMPROVEMENTS NEEDED</div>
+            <div class="fb-item imp">⚠ {{ ans.feedback|truncatewords:25 }}</div>
+        </div>
+        <div class="fb-section">
+            <div class="fb-title tip">📘 RECOMMENDATION</div>
+            <div class="fb-item tip">📘 Study this topic in depth and practise explaining with examples.</div>
+        </div>
+        {% else %}
+        <div class="fb-section">
+            <div class="fb-title imp">⚠ IMPROVEMENTS NEEDED</div>
+            <div class="fb-item imp">⚠ {{ ans.feedback|truncatewords:30 }}</div>
+        </div>
+        <div class="fb-section">
+            <div class="fb-title tip">📘 RECOMMENDATION</div>
+            <div class="fb-item tip">📘 Review core concepts for this topic before your next interview.</div>
         </div>
         {% endif %}
+
+        <!-- Interviewer impression -->
+        <div class="impression">
+            💬
+            {% if ans.score >= 8 %}"Strong answer. Candidate clearly understands this concept."
+            {% elif ans.score >= 6 %}"Decent response. More depth and examples would strengthen this answer."
+            {% elif ans.score >= 4 %}"Partial understanding shown. Key concepts were missing or unclear."
+            {% else %}"Answer needs significant improvement. Recommend focused study on this topic."
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Skill tags -->
+        <div class="skill-tags">
+            {% if "API" in ans.question_text or "REST" in ans.question_text %}
+                <span class="stag">API Design</span>
+            {% endif %}
+            {% if "database" in ans.question_text or "SQL" in ans.question_text or "index" in ans.question_text %}
+                <span class="stag">Databases</span>
+            {% endif %}
+            {% if "security" in ans.question_text or "auth" in ans.question_text or "JWT" in ans.question_text %}
+                <span class="stag">Security</span>
+            {% endif %}
+            {% if "frontend" in ans.question_text or "CSS" in ans.question_text or "React" in ans.question_text or "DOM" in ans.question_text %}
+                <span class="stag">Frontend</span>
+            {% endif %}
+            {% if "backend" in ans.question_text or "server" in ans.question_text or "Django" in ans.question_text %}
+                <span class="stag">Backend</span>
+            {% endif %}
+            {% if "system" in ans.question_text or "scale" in ans.question_text or "architect" in ans.question_text %}
+                <span class="stag">System Design</span>
+            {% endif %}
+            {% if "cloud" in ans.question_text or "Docker" in ans.question_text or "deploy" in ans.question_text %}
+                <span class="stag">DevOps</span>
+            {% endif %}
+            <span class="stag">{{ role.name }}</span>
+        </div>
+
     </div>
     {% endfor %}
+</div>
 
-    <!-- Summary -->
-    <div class="summary-box">
-        <h6 class="fw-bold mb-2" style="font-size:13px; color:#a78bfa !important; letter-spacing:0.5px;">
-            PERFORMANCE SUMMARY
-        </h6>
-        <p style="font-size:14px; color:#cbd5e1 !important; margin:0;">
+<!-- ── SUMMARY + ACTIONS ───────────────────────────────────────── -->
+<div class="glass">
+    <div class="sec-label">PERFORMANCE SUMMARY</div>
+    <div class="summary-box mb-4">
+        <p style="font-size:14px;color:#cbd5e1 !important;margin:0;line-height:1.7;">
             {% if percentage >= 80 %}
-                Excellent performance. Strong technical depth, clear communication, and confident answers. Ready for senior-level interviews.
+                Excellent performance across all questions. Strong technical depth, clear communication, and confident answers. You are well-prepared for senior-level interviews.
             {% elif percentage >= 60 %}
-                Good foundational knowledge. Work on providing more specific examples and deeper technical explanations to stand out.
+                Good foundational knowledge demonstrated. To reach the next level, focus on providing specific examples, deeper technical explanations, and structured answers.
             {% else %}
-                Keep building your fundamentals. Review each topic, practise explaining concepts out loud, and attempt again.
+                Keep building your fundamentals. Review each topic carefully, practise explaining concepts out loud, and attempt again after focused preparation.
             {% endif %}
         </p>
     </div>
 
-    <!-- Action buttons -->
     <div class="d-grid gap-3">
-        <a href="{% url 'start_interview' session.job_role.id %}?restart=true"
-           class="btn-primary-grad">
+        <a href="{% url 'start_interview' session.job_role.id %}?restart=true" class="btn-g">
             🔄 Retake This Interview
         </a>
-        <a href="{% url 'select_role' %}" class="btn-outline-grad">
-            🎯 Try a Different Role
-        </a>
-        <a href="{% url 'dashboard' %}" class="btn-outline-grad">
-            📊 View Dashboard
-        </a>
+        <a href="{% url 'select_role' %}" class="btn-o">🎯 Try a Different Role</a>
+        <a href="{% url 'dashboard' %}" class="btn-o">📊 View Dashboard</a>
     </div>
+</div>
 
-</div>
-</div>
+</div><!-- .rw -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 (function () {
-    // Animate score ring on load
-    var pct    = {{ percentage }};
+    var pct = {{ percentage }};
+
+    /* ── Score ring animation ── */
     var circle = document.getElementById("ringCircle");
     if (circle) {
-        var circ = 2 * Math.PI * 52;
-        var offset = circ - (pct / 100) * circ;
-        // Start fully hidden then animate
+        var circ   = 2 * Math.PI * 56;   /* r=56 */
+        var target = circ - (pct / 100) * circ;
+        circle.style.strokeDasharray  = circ;
         circle.style.strokeDashoffset = circ;
         setTimeout(function () {
-            circle.style.transition = "stroke-dashoffset 1.2s ease";
-            circle.style.strokeDashoffset = offset;
-        }, 200);
+            circle.style.transition = "stroke-dashoffset 1.3s ease";
+            circle.style.strokeDashoffset = target;
+        }, 300);
     }
 
-    // Radar chart
+    /* ── Mini stats from answer scores ── */
+    var pills = document.querySelectorAll(".score-pill");
+    var scores = [];
+    pills.forEach(function (p) {
+        var m = p.textContent.match(/(\d+)\/10/);
+        if (m) scores.push(parseInt(m[1]));
+    });
+    if (scores.length) {
+        var avg  = Math.round(scores.reduce(function(a,b){return a+b;},0) / scores.length * 10);
+        var best = Math.max.apply(null, scores) * 10;
+        var avgEl  = document.getElementById("avgScore");
+        var bestEl = document.getElementById("topScore");
+        if (avgEl)  avgEl.textContent  = avg  + "%";
+        if (bestEl) bestEl.textContent = best + "%";
+    }
+
+    /* ── Radar chart ── */
     var ctx = document.getElementById("radarChart");
     if (!ctx) return;
-
-    // Derive radar scores from overall percentage
-    var base = pct;
-    var scores = [
-        Math.min(100, Math.round(base * 1.05)),   // Technical Knowledge
-        Math.min(100, Math.round(base * 0.95)),   // Communication
-        Math.min(100, Math.round(base * 0.90)),   // Problem Solving
-        Math.min(100, Math.round(base * 1.00)),   // Depth of Answers
-        Math.min(100, Math.round(base * 0.85)),   // Confidence
-    ];
-
+    var b = pct;
     new Chart(ctx, {
         type: "radar",
         data: {
-            labels: [
-                "Technical Knowledge",
-                "Communication",
-                "Problem Solving",
-                "Answer Depth",
-                "Confidence"
-            ],
+            labels: ["Technical","Communication","Problem Solving","Answer Depth","Confidence"],
             datasets: [{
-                data: scores,
-                backgroundColor: "rgba(124,58,237,0.15)",
+                data: [
+                    Math.min(100, Math.round(b * 1.05)),
+                    Math.min(100, Math.round(b * 0.95)),
+                    Math.min(100, Math.round(b * 0.90)),
+                    Math.min(100, Math.round(b * 1.00)),
+                    Math.min(100, Math.round(b * 0.85))
+                ],
+                backgroundColor: "rgba(124,58,237,0.12)",
                 borderColor: "#7c3aed",
                 borderWidth: 2,
                 pointBackgroundColor: "#7c3aed",
-                pointRadius: 4,
+                pointRadius: 4
             }]
         },
         options: {
@@ -341,21 +487,16 @@ hr.divider { border-color: rgba(124,58,237,0.15); margin: 24px 0; }
             scales: {
                 r: {
                     min: 0, max: 100,
-                    ticks: {
-                        stepSize: 25,
-                        color: "#475569",
-                        backdropColor: "transparent",
-                        font: { size: 10 }
-                    },
-                    grid:        { color: "rgba(124,58,237,0.12)" },
-                    angleLines:  { color: "rgba(124,58,237,0.12)" },
-                    pointLabels: { color: "#94a3b8", font: { size: 12 } }
+                    ticks: { stepSize: 25, color: "#475569", backdropColor: "transparent", font: { size: 10 } },
+                    grid:        { color: "rgba(124,58,237,0.1)" },
+                    angleLines:  { color: "rgba(124,58,237,0.1)" },
+                    pointLabels: { color: "#94a3b8", font: { size: 11 } }
                 }
             },
-            plugins: { legend: { display: false } }
+            plugins: { legend: { display: false } },
+            animation: { duration: 1000 }
         }
     });
 }());
 </script>
-
 {% endblock %}
