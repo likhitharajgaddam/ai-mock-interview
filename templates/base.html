@@ -507,35 +507,76 @@ body > *:not(canvas) { position:relative; z-index:2; }
 
 <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
 <script>
-tsParticles.load("particles", {
-    background: { color: "transparent" },
-    particles: {
-        number: { value: 60 },
-        color: { value: "#7c3aed" },
-        links: { enable: true, color: "#4f46e5", distance: 150 },
-        move: { enable: true, speed: 1 },
-        size: { value: 3 }
+/* ── Theme-aware particle colors ── */
+var THEME_PARTICLES = {
+    "default":   { color: "#7c3aed", link: "#4f46e5" },
+    "neon":      { color: "#d946ef", link: "#a21caf" },
+    "matrix":    { color: "#00ff41", link: "#00cc33" },
+    "synthwave": { color: "#f72585", link: "#7209b7" },
+    "jarvis":    { color: "#00d4ff", link: "#0066cc" },
+    "cyberpunk": { color: "#ffd60a", link: "#ff6b35" }
+};
+
+var _particlesContainer = null;
+
+function loadParticles(themeId) {
+    var p = THEME_PARTICLES[themeId] || THEME_PARTICLES["default"];
+    if (_particlesContainer) {
+        try { _particlesContainer.destroy(); } catch(e) {}
+        _particlesContainer = null;
     }
-});
+    tsParticles.load("particles", {
+        background: { color: "transparent" },
+        particles: {
+            number: { value: 50 },
+            color: { value: p.color },
+            links: { enable: true, color: p.link, distance: 150, opacity: 0.4 },
+            move: { enable: true, speed: 1 },
+            size: { value: { min: 1, max: 3 } },
+            opacity: { value: { min: 0.3, max: 0.7 } }
+        }
+    }).then(function(c) { _particlesContainer = c; });
+}
+
+loadParticles(localStorage.getItem("ai_mock_theme") || "default");
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const scene    = new THREE.Scene();
-const camera   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+/* ── Theme-aware Three.js sphere ── */
+var THEME_SPHERE_COLORS = {
+    "default":   0x7c3aed,
+    "neon":      0xd946ef,
+    "matrix":    0x00ff41,
+    "synthwave": 0xf72585,
+    "jarvis":    0x00d4ff,
+    "cyberpunk": 0xffd60a
+};
+
+var scene    = new THREE.Scene();
+var camera   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.domElement.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;";
 document.body.appendChild(renderer.domElement);
-const geometry = new THREE.IcosahedronGeometry(2, 1);
-const material = new THREE.MeshBasicMaterial({ color: 0x7c3aed, wireframe: true, transparent: true, opacity: 0.25 });
-const sphere   = new THREE.Mesh(geometry, material);
+var geometry = new THREE.IcosahedronGeometry(2, 1);
+var _initColor = THEME_SPHERE_COLORS[localStorage.getItem("ai_mock_theme") || "default"] || 0x7c3aed;
+var material = new THREE.MeshBasicMaterial({ color: _initColor, wireframe: true, transparent: true, opacity: 0.22 });
+var sphere   = new THREE.Mesh(geometry, material);
 scene.add(sphere);
 camera.position.z = 5;
 function animate() { requestAnimationFrame(animate); sphere.rotation.x += 0.002; sphere.rotation.y += 0.003; renderer.render(scene, camera); }
 animate();
+
+function updateSphereColor(themeId) {
+    var col = THEME_SPHERE_COLORS[themeId] || THEME_SPHERE_COLORS["default"];
+    material.color.setHex(col);
+}
 </script>
+
+<!-- Canvas for theme-specific background effects -->
+<canvas id="themeCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 0.5s;"></canvas>
 
 <script>
 (function () {
@@ -573,9 +614,171 @@ var THEMES = [
 function getTotalXP()    { return parseInt(localStorage.getItem("ai_mock_total_xp") || "0", 10); }
 function getActiveTheme(){ return localStorage.getItem("ai_mock_theme") || "default"; }
 
-/* ── Apply theme to DOM ── */
+/* ── Apply theme to DOM + live effects ── */
 function applyTheme(id) {
     document.body.setAttribute("data-theme", id === "default" ? "" : id);
+    /* Recolor particles */
+    if (typeof loadParticles === "function") { loadParticles(id); }
+    /* Recolor Three.js sphere */
+    if (typeof updateSphereColor === "function") { updateSphereColor(id); }
+    /* Start/stop canvas effects */
+    startThemeEffect(id);
+}
+
+/* ── Canvas-based theme effects ── */
+var _themeEffectRAF = null;
+var _themeEffectId  = null;
+
+function startThemeEffect(themeId) {
+    /* Stop any running effect */
+    if (_themeEffectRAF) { cancelAnimationFrame(_themeEffectRAF); _themeEffectRAF = null; }
+    var canvas = document.getElementById("themeCanvas");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+
+    function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    if (themeId === "matrix") {
+        canvas.style.opacity = "1";
+        /* Matrix rain */
+        var cols   = Math.floor(canvas.width / 16);
+        var drops  = [];
+        for (var i = 0; i < cols; i++) { drops[i] = Math.random() * -50; }
+        var chars  = "アイウエオカキクケコサシスセソタチツテトナニヌネノ01ABCDEF";
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0,5,0,0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00ff41";
+            ctx.font = "14px 'Courier New', monospace";
+            for (var i = 0; i < drops.length; i++) {
+                var c = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillStyle = drops[i] < 2 ? "#aaffaa" : "#00ff41";
+                ctx.fillText(c, i * 16, drops[i] * 16);
+                if (drops[i] * 16 > canvas.height && Math.random() > 0.975) { drops[i] = 0; }
+                drops[i] += 0.5;
+            }
+            _themeEffectRAF = requestAnimationFrame(drawMatrix);
+        }
+        drawMatrix();
+
+    } else if (themeId === "jarvis") {
+        canvas.style.opacity = "1";
+        /* Jarvis rotating rings */
+        var rings = [
+            { r: 120, speed: 0.008, color: "rgba(0,212,255,0.15)", dash: [20,10] },
+            { r: 180, speed: -0.005, color: "rgba(0,212,255,0.1)",  dash: [40,20] },
+            { r: 240, speed: 0.003, color: "rgba(0,102,204,0.08)",  dash: [60,30] }
+        ];
+        var angles = [0, 0, 0];
+        var cx, cy;
+        function drawJarvis() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            cx = canvas.width / 2;
+            cy = canvas.height / 2;
+            rings.forEach(function(ring, i) {
+                angles[i] += ring.speed;
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angles[i]);
+                ctx.beginPath();
+                ctx.arc(0, 0, ring.r, 0, Math.PI * 2);
+                ctx.strokeStyle = ring.color;
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash(ring.dash);
+                ctx.stroke();
+                ctx.restore();
+            });
+            /* Radar sweep */
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angles[0] * 3);
+            var grad = ctx.createConicalGradient ? null : null;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, 240, -0.3, 0.3);
+            ctx.closePath();
+            ctx.fillStyle = "rgba(0,212,255,0.04)";
+            ctx.fill();
+            ctx.restore();
+            _themeEffectRAF = requestAnimationFrame(drawJarvis);
+        }
+        drawJarvis();
+
+    } else if (themeId === "cyberpunk") {
+        canvas.style.opacity = "1";
+        /* Cyberpunk: random glitch lines */
+        var glitchTimer = 0;
+        function drawCyberpunk() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            glitchTimer++;
+            if (glitchTimer % 40 < 3) {
+                /* Glitch burst */
+                for (var g = 0; g < 6; g++) {
+                    var gy = Math.random() * canvas.height;
+                    var gh = Math.random() * 4 + 1;
+                    var gx = Math.random() * canvas.width * 0.3;
+                    ctx.fillStyle = "rgba(255,214,10," + (Math.random() * 0.15) + ")";
+                    ctx.fillRect(gx, gy, canvas.width * 0.6, gh);
+                }
+            }
+            /* Subtle scan line */
+            var scanY = (glitchTimer * 2) % canvas.height;
+            ctx.fillStyle = "rgba(255,107,53,0.04)";
+            ctx.fillRect(0, scanY, canvas.width, 2);
+            _themeEffectRAF = requestAnimationFrame(drawCyberpunk);
+        }
+        drawCyberpunk();
+
+    } else if (themeId === "synthwave") {
+        canvas.style.opacity = "1";
+        /* Synthwave: animated horizon grid */
+        var offset = 0;
+        function drawSynthwave() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var h = canvas.height;
+            var w = canvas.width;
+            var horizon = h * 0.65;
+            offset = (offset + 0.5) % 60;
+            /* Vertical lines */
+            ctx.strokeStyle = "rgba(247,37,133,0.12)";
+            ctx.lineWidth = 1;
+            for (var x = -w; x < w * 2; x += 60) {
+                ctx.beginPath();
+                ctx.moveTo(w/2, horizon);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            /* Horizontal lines with perspective */
+            for (var row = 0; row < 12; row++) {
+                var t = (row / 12 + offset / 720);
+                var y = horizon + Math.pow(t, 1.8) * (h - horizon);
+                var alpha = 0.04 + row * 0.01;
+                ctx.strokeStyle = "rgba(247,37,133," + alpha + ")";
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+            /* Sun glow */
+            var sunGrad = ctx.createRadialGradient(w/2, horizon, 0, w/2, horizon, 120);
+            sunGrad.addColorStop(0, "rgba(247,37,133,0.12)");
+            sunGrad.addColorStop(1, "rgba(247,37,133,0)");
+            ctx.fillStyle = sunGrad;
+            ctx.fillRect(0, 0, w, h);
+            _themeEffectRAF = requestAnimationFrame(drawSynthwave);
+        }
+        drawSynthwave();
+
+    } else {
+        /* Default / neon — clear canvas, no special effect */
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.style.opacity = "0";
+    }
 }
 
 /* Apply saved theme immediately on every page load — no flash */
