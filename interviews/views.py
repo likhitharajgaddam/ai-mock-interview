@@ -491,3 +491,50 @@ def generate_ai_question(request):
         return JsonResponse({"questions": FALLBACK_QUESTIONS["Software Developer"]})
     questions = generate_ai_questions_logic(role)
     return JsonResponse({"questions": questions})
+
+
+def ai_status(request):
+    """
+    Diagnostic endpoint — visit /interview/api/status/ in browser.
+    Shows whether GROQ_API_KEY is set and whether the API responds.
+    Safe: never prints the full key.
+    """
+    import os
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+
+    if not key:
+        return JsonResponse({
+            "groq_key_set": False,
+            "groq_key_format": "MISSING",
+            "groq_api_test": "skipped",
+            "status": "ERROR — GROQ_API_KEY not set in Render environment",
+        })
+
+    key_preview = key[:8] + "..." + key[-4:]
+    key_format_ok = key.startswith("gsk_")
+
+    # Try a minimal live API call
+    api_result = "not_tested"
+    api_error  = None
+    try:
+        from groq import Groq
+        client = Groq(api_key=key)
+        resp = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": "Reply with the single word: working"}],
+            max_tokens=10,
+            temperature=0,
+        )
+        api_result = resp.choices[0].message.content.strip()
+    except Exception as exc:
+        api_error  = "{}: {}".format(type(exc).__name__, str(exc))
+        api_result = "failed"
+
+    return JsonResponse({
+        "groq_key_set":    True,
+        "groq_key_preview": key_preview,
+        "groq_key_format_ok": key_format_ok,
+        "groq_api_test":   api_result,
+        "groq_api_error":  api_error,
+        "status": "OK" if api_result not in ("failed", "not_tested") else "ERROR",
+    })

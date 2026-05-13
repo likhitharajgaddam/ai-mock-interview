@@ -97,24 +97,38 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const form = document.getElementById("answerForm");
-    const textarea = document.getElementById("answerInput");
-    const button = form.querySelector("button");
+    var form     = document.getElementById("answerForm");
+    var textarea = document.getElementById("answerInput");
+    var button   = form.querySelector("button");
 
-    let submitted = false;
+    // Always clear the textarea on load — prevents browser autofill
+    // repeating the previous answer on the next question
+    textarea.value = "";
 
-    textarea.addEventListener("keydown", function (event) {
+    // Auto-focus so user can type immediately without clicking
+    textarea.focus();
 
-        if (event.key === "Enter" && !event.shiftKey) {
+    var submitted = false;
 
-            event.preventDefault();
-
-            if (!submitted) {
+    // Submit on Enter (Shift+Enter = newline)
+    textarea.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            if (!submitted && textarea.value.trim().length > 0) {
                 submitted = true;
                 button.disabled = true;
+                button.textContent = "Submitting...";
                 form.submit();
             }
         }
+    });
+
+    // Prevent double-submit on button click
+    form.addEventListener("submit", function () {
+        if (submitted) { return false; }
+        submitted = true;
+        button.disabled = true;
+        button.textContent = "Submitting...";
     });
 });
 </script>
