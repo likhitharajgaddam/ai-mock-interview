@@ -3,13 +3,13 @@ import os
 import re
 import random
 import logging
+from typing import List, Optional
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
-from groq import Groq
 
 from .evaluator import evaluate_answer
 from .models import Answer, InterviewSession, JobRole
@@ -150,19 +150,30 @@ FALLBACK_QUESTIONS = {
 # Groq client for question generation (separate from evaluator)
 # ---------------------------------------------------------------------------
 
-def _get_groq_client() -> Groq | None:
+def _get_groq_client():
+    # type: () -> Optional[object]
+    """Returns Groq client if available, None otherwise."""
     key = os.environ.get("GROQ_API_KEY", "").strip()
     if not key:
         logger.warning("GROQ_API_KEY not set — AI question generation disabled.")
         return None
-    return Groq(api_key=key)
+    try:
+        from groq import Groq
+        return Groq(api_key=key)
+    except ImportError:
+        logger.error("groq package not installed.")
+        return None
+    except Exception as exc:
+        logger.error("Failed to build Groq client: %s", exc)
+        return None
 
 
 # ---------------------------------------------------------------------------
 # AI question generation
 # ---------------------------------------------------------------------------
 
-def generate_ai_questions_logic(role, count: int = 8) -> list[str]:
+def generate_ai_questions_logic(role, count=8):
+    # type: (object, int) -> List[str]
     client = _get_groq_client()
     if client is None:
         return _fallback_questions(role)
@@ -198,7 +209,8 @@ def generate_ai_questions_logic(role, count: int = 8) -> list[str]:
     return _fallback_questions(role)
 
 
-def _fallback_questions(role) -> list[str]:
+def _fallback_questions(role):
+    # type: (object) -> List[str]
     questions = FALLBACK_QUESTIONS.get(
         role.name,
         random.choice(list(FALLBACK_QUESTIONS.values())),
