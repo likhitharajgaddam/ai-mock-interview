@@ -485,11 +485,15 @@ def start_interview(request, role_id):
 def interview_result(request, session_id):
     session = InterviewSession.objects.get(id=session_id, user=request.user)
     answers = session.answer_set.all()
+    # Pre-compute SVG ring offset: circumference = 2*pi*52 = 326.7
+    circumference = 326.7
+    ring_offset = round(circumference - (session.total_score / 100) * circumference, 1)
     return render(request, "result.html", {
-        "role":       session.job_role,
-        "session":    session,
-        "percentage": session.total_score,
-        "answers":    answers,
+        "role":        session.job_role,
+        "session":     session,
+        "percentage":  session.total_score,
+        "answers":     answers,
+        "ring_offset": ring_offset,
     })
 
 

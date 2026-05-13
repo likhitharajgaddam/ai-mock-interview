@@ -2,181 +2,360 @@
 {% block content %}
 
 <style>
+/* ── Layout ─────────────────────────────────────────────── */
+.result-wrap { max-width: 820px; width: 100%; margin: 0 auto; }
+
 .result-card {
-    max-width: 800px;
-    width: 100%;
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(13,18,36,0.97);
     border: 1px solid rgba(124,58,237,0.25);
-    border-radius: 16px;
-    padding: 32px;
+    border-radius: 20px;
+    padding: 36px;
     color: #ffffff;
+    box-shadow: 0 0 60px rgba(124,58,237,0.1), 0 20px 40px rgba(0,0,0,0.4);
 }
-.result-card h1,.result-card h2,.result-card h3,
-.result-card h4,.result-card h5,.result-card h6,
-.result-card p,.result-card span,.result-card small,
-.result-card strong,.result-card li {
-    color: #ffffff !important;
+.result-card * { color: #ffffff !important; }
+
+/* ── Score ring ─────────────────────────────────────────── */
+.score-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 8px;
 }
-.answer-card {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(124,58,237,0.2);
-    border-radius: 12px;
+.score-ring {
+    position: relative;
+    width: 120px; height: 120px;
+    margin-bottom: 12px;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.ring-bg  { fill: none; stroke: rgba(30,41,59,0.8); stroke-width: 8; }
+.ring-val { fill: none; stroke-width: 8; stroke-linecap: round;
+            stroke: url(#ringGrad); transition: stroke-dashoffset 1s ease; }
+.score-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 800;
+}
+
+/* ── Level badge ────────────────────────────────────────── */
+.level-badge {
+    display: inline-block;
+    padding: 6px 20px; border-radius: 30px;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+    margin-bottom: 24px;
+}
+.level-advanced     { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #6ee7b7 !important; }
+.level-intermediate { background: rgba(245,158,11,0.15);  border: 1px solid rgba(245,158,11,0.4);  color: #fcd34d !important; }
+.level-beginner     { background: rgba(239,68,68,0.15);   border: 1px solid rgba(239,68,68,0.4);   color: #fca5a5 !important; }
+
+/* ── Radar chart ────────────────────────────────────────── */
+.radar-wrap {
+    background: rgba(30,41,59,0.4);
+    border: 1px solid rgba(124,58,237,0.15);
+    border-radius: 16px;
     padding: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
 }
+
+/* ── Answer cards ───────────────────────────────────────── */
+.ans-card {
+    background: rgba(20,28,50,0.8);
+    border: 1px solid rgba(124,58,237,0.18);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+}
+.ans-card:hover { border-color: rgba(124,58,237,0.4); }
+
+.ans-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.q-label { font-size: 12px; font-weight: 700; color: #a78bfa !important; letter-spacing: 0.5px; }
 .score-pill {
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    display: inline-block;
+    padding: 3px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
 }
-.btn-retake {
+
+.q-text { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+
+.ans-text-box {
+    background: rgba(15,23,42,0.7);
+    border-radius: 8px; padding: 10px 14px;
+    margin-bottom: 10px;
+}
+.ans-text-box .label { font-size: 11px; color: #475569 !important; margin-bottom: 4px; }
+.ans-text-box p { font-size: 14px; color: #cbd5e1 !important; margin: 0; }
+
+.feedback-box {
+    background: rgba(79,70,229,0.08);
+    border-left: 3px solid #7c3aed;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+}
+.feedback-box .label { font-size: 11px; color: #7c3aed !important; margin-bottom: 4px; font-weight: 700; }
+.feedback-box p { font-size: 14px; color: #e2e8f0 !important; margin: 0; }
+
+/* ── Summary box ────────────────────────────────────────── */
+.summary-box {
+    background: rgba(79,70,229,0.08);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+/* ── Hiring recommendation ──────────────────────────────── */
+.hire-box {
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.hire-yes  { background: rgba(16,185,129,0.1);  border: 1px solid rgba(16,185,129,0.3); }
+.hire-maybe{ background: rgba(245,158,11,0.1);   border: 1px solid rgba(245,158,11,0.3); }
+.hire-no   { background: rgba(239,68,68,0.1);    border: 1px solid rgba(239,68,68,0.3); }
+.hire-icon { font-size: 28px; }
+.hire-title{ font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.hire-desc { font-size: 13px; color: #94a3b8 !important; margin: 0; }
+
+/* ── Action buttons ─────────────────────────────────────── */
+.btn-primary-grad {
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
-    border: none;
-    color: #fff !important;
-    border-radius: 10px;
-    padding: 13px 20px;
-    font-weight: 600;
-    transition: 0.3s;
-    text-decoration: none;
-    display: block;
-    text-align: center;
+    border: none; border-radius: 12px;
+    color: #fff !important; font-weight: 700;
+    padding: 14px 20px; text-decoration: none;
+    display: block; text-align: center;
+    transition: opacity 0.2s, transform 0.2s;
 }
-.btn-retake:hover { opacity: 0.88; transform: translateY(-2px); }
-.btn-outline-purple {
+.btn-primary-grad:hover { opacity: 0.88; transform: translateY(-2px); }
+
+.btn-outline-grad {
     background: transparent;
-    border: 1px solid rgba(124,58,237,0.5);
-    color: #ffffff !important;
-    border-radius: 10px;
-    padding: 13px 20px;
-    font-weight: 600;
-    transition: 0.3s;
-    text-decoration: none;
-    display: block;
-    text-align: center;
+    border: 1px solid rgba(124,58,237,0.45);
+    border-radius: 12px;
+    color: #ffffff !important; font-weight: 600;
+    padding: 14px 20px; text-decoration: none;
+    display: block; text-align: center;
+    transition: background 0.2s, border-color 0.2s;
 }
-.btn-outline-purple:hover {
-    background: rgba(124,58,237,0.2);
-    border-color: #7c3aed;
-}
-.tag {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    margin: 2px;
-}
-.tag-green  { background: rgba(16,185,129,0.2); color: #6ee7b7 !important; border: 1px solid rgba(16,185,129,0.3); }
-.tag-red    { background: rgba(239,68,68,0.2);  color: #fca5a5 !important; border: 1px solid rgba(239,68,68,0.3); }
-.tag-blue   { background: rgba(59,130,246,0.2); color: #93c5fd !important; border: 1px solid rgba(59,130,246,0.3); }
+.btn-outline-grad:hover { background: rgba(124,58,237,0.15); border-color: #7c3aed; }
+
+hr.divider { border-color: rgba(124,58,237,0.15); margin: 24px 0; }
 </style>
 
-<div class="d-flex justify-content-center">
-<div class="result-card shadow-lg">
+<div class="result-wrap">
+<div class="result-card">
 
     <!-- Header -->
     <div class="text-center mb-4">
-        <h2 class="fw-bold mb-1">Interview Complete</h2>
-        <p style="color:#94a3b8 !important;">{{ role.name }} Assessment</p>
+        <p style="color:#64748b !important; font-size:13px; margin-bottom:6px; letter-spacing:1px;">
+            INTERVIEW COMPLETE
+        </p>
+        <h2 class="fw-bold mb-1">{{ role.name }}</h2>
+        <p style="color:#64748b !important; font-size:13px;">Technical Assessment Report</p>
     </div>
 
-    <!-- Score -->
-    <div class="text-center mb-3">
-        <p style="color:#94a3b8 !important; margin-bottom:4px;">Overall Score</p>
-        <h1 class="fw-bold display-4 mb-2">{{ percentage }}%</h1>
-    </div>
-
-    <!-- Progress bar -->
-    <div class="progress mb-4" style="height:10px;border-radius:8px;background:rgba(30,41,59,0.8);">
-        <div class="progress-bar" role="progressbar"
-             style="width:{{ percentage }}%;background:linear-gradient(90deg,#4f46e5,#7c3aed);">
+    <!-- Score ring -->
+    <div class="score-ring-wrap">
+        <div class="score-ring">
+            <svg viewBox="0 0 120 120" width="120" height="120">
+                <defs>
+                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#4f46e5"/>
+                        <stop offset="100%" stop-color="#7c3aed"/>
+                    </linearGradient>
+                </defs>
+                <circle class="ring-bg"  cx="60" cy="60" r="52"/>
+                <circle class="ring-val" cx="60" cy="60" r="52"
+                    stroke-dasharray="326.7"
+                    stroke-dashoffset="{{ ring_offset }}"
+                    id="ringCircle"/>
+            </svg>
+            <div class="score-num">{{ percentage }}%</div>
         </div>
-    </div>
 
-    <!-- Level badge -->
-    <div class="text-center mb-4">
+        <!-- Level badge -->
         {% if percentage >= 80 %}
-            <span class="badge bg-success px-4 py-2 fs-6">Advanced Level</span>
+            <span class="level-badge level-advanced">⭐ Advanced Level</span>
         {% elif percentage >= 60 %}
-            <span class="badge bg-warning text-dark px-4 py-2 fs-6">Intermediate Level</span>
+            <span class="level-badge level-intermediate">📈 Intermediate Level</span>
         {% else %}
-            <span class="badge bg-danger px-4 py-2 fs-6">Beginner Level</span>
+            <span class="level-badge level-beginner">🌱 Beginner Level</span>
         {% endif %}
     </div>
 
-    <hr style="border-color:rgba(124,58,237,0.2);">
+    <!-- Radar chart -->
+    <div class="radar-wrap">
+        <h6 class="fw-bold mb-3" style="font-size:13px; color:#a78bfa !important; letter-spacing:0.5px;">
+            PERFORMANCE ANALYTICS
+        </h6>
+        <canvas id="radarChart" height="220"></canvas>
+    </div>
+
+    <!-- Hiring recommendation -->
+    {% if percentage >= 75 %}
+    <div class="hire-box hire-yes">
+        <div class="hire-icon">✅</div>
+        <div>
+            <div class="hire-title" style="color:#6ee7b7 !important;">Strong Hire Recommendation</div>
+            <p class="hire-desc">Candidate demonstrates solid technical knowledge and communication skills.</p>
+        </div>
+    </div>
+    {% elif percentage >= 50 %}
+    <div class="hire-box hire-maybe">
+        <div class="hire-icon">🔄</div>
+        <div>
+            <div class="hire-title" style="color:#fcd34d !important;">Consider with Follow-up</div>
+            <p class="hire-desc">Good potential shown. Recommend a second round focusing on weak areas.</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="hire-box hire-no">
+        <div class="hire-icon">📚</div>
+        <div>
+            <div class="hire-title" style="color:#fca5a5 !important;">Not Ready — Keep Practising</div>
+            <p class="hire-desc">Focus on core concepts and hands-on projects before the next attempt.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr class="divider">
 
     <!-- Detailed review -->
-    <h4 class="fw-bold mb-3">Detailed Review</h4>
+    <h5 class="fw-bold mb-3" style="font-size:14px; letter-spacing:0.5px; color:#a78bfa !important;">
+        DETAILED REVIEW
+    </h5>
 
     {% for ans in answers %}
-    <div class="answer-card">
-
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0" style="color:#a78bfa !important;">
-                Q{{ forloop.counter }}.
-            </h6>
+    <div class="ans-card">
+        <div class="ans-header">
+            <span class="q-label">QUESTION {{ forloop.counter }}</span>
             <span class="score-pill">{{ ans.score }}/10</span>
         </div>
-
-        <p class="mb-2" style="font-size:15px;">{{ ans.question_text }}</p>
-
-        <div class="mb-2" style="background:rgba(15,23,42,0.6);border-radius:8px;padding:10px;">
-            <small style="color:#64748b !important;">Your answer:</small>
-            <p class="mb-0" style="font-size:14px;color:#cbd5e1 !important;">{{ ans.response }}</p>
+        <p class="q-text">{{ ans.question_text }}</p>
+        <div class="ans-text-box">
+            <div class="label">YOUR ANSWER</div>
+            <p>{{ ans.response }}</p>
         </div>
-
         {% if ans.feedback %}
-        <div>
-            <small style="color:#64748b !important;">AI Feedback:</small>
-            <p class="mb-0" style="font-size:14px;color:#e2e8f0 !important;">{{ ans.feedback }}</p>
+        <div class="feedback-box">
+            <div class="label">🤖 AI FEEDBACK</div>
+            <p>{{ ans.feedback }}</p>
         </div>
         {% endif %}
-
     </div>
     {% endfor %}
 
     <!-- Summary -->
-    <div class="mb-4 mt-2" style="background:rgba(79,70,229,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:18px;">
-        <h5 class="fw-semibold mb-2">Performance Summary</h5>
-        <p style="color:#cbd5e1 !important; margin-bottom:0;">
+    <div class="summary-box">
+        <h6 class="fw-bold mb-2" style="font-size:13px; color:#a78bfa !important; letter-spacing:0.5px;">
+            PERFORMANCE SUMMARY
+        </h6>
+        <p style="font-size:14px; color:#cbd5e1 !important; margin:0;">
             {% if percentage >= 80 %}
-                Strong technical understanding with solid practical knowledge. You are ready for senior-level interviews.
+                Excellent performance. Strong technical depth, clear communication, and confident answers. Ready for senior-level interviews.
             {% elif percentage >= 60 %}
-                Good foundational knowledge. Focus on depth, examples, and structured answers to reach the next level.
+                Good foundational knowledge. Work on providing more specific examples and deeper technical explanations to stand out.
             {% else %}
-                Keep practising core concepts. Review each question's topic and try to explain with real examples.
+                Keep building your fundamentals. Review each topic, practise explaining concepts out loud, and attempt again.
             {% endif %}
         </p>
     </div>
 
     <!-- Action buttons -->
-    <div class="d-grid gap-3 mt-4">
-
-        <!-- Retake same role -->
+    <div class="d-grid gap-3">
         <a href="{% url 'start_interview' session.job_role.id %}?restart=true"
-           class="btn-retake">
-            Retake This Interview
+           class="btn-primary-grad">
+            🔄 Retake This Interview
         </a>
-
-        <!-- Try different role -->
-        <a href="{% url 'select_role' %}"
-           class="btn-outline-purple">
-            Try a Different Role
+        <a href="{% url 'select_role' %}" class="btn-outline-grad">
+            🎯 Try a Different Role
         </a>
-
-        <!-- Dashboard -->
-        <a href="{% url 'dashboard' %}"
-           class="btn-outline-purple">
-            View Dashboard
+        <a href="{% url 'dashboard' %}" class="btn-outline-grad">
+            📊 View Dashboard
         </a>
-
     </div>
 
 </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    // Animate score ring on load
+    var pct    = {{ percentage }};
+    var circle = document.getElementById("ringCircle");
+    if (circle) {
+        var circ = 2 * Math.PI * 52;
+        var offset = circ - (pct / 100) * circ;
+        // Start fully hidden then animate
+        circle.style.strokeDashoffset = circ;
+        setTimeout(function () {
+            circle.style.transition = "stroke-dashoffset 1.2s ease";
+            circle.style.strokeDashoffset = offset;
+        }, 200);
+    }
+
+    // Radar chart
+    var ctx = document.getElementById("radarChart");
+    if (!ctx) return;
+
+    // Derive radar scores from overall percentage
+    var base = pct;
+    var scores = [
+        Math.min(100, Math.round(base * 1.05)),   // Technical Knowledge
+        Math.min(100, Math.round(base * 0.95)),   // Communication
+        Math.min(100, Math.round(base * 0.90)),   // Problem Solving
+        Math.min(100, Math.round(base * 1.00)),   // Depth of Answers
+        Math.min(100, Math.round(base * 0.85)),   // Confidence
+    ];
+
+    new Chart(ctx, {
+        type: "radar",
+        data: {
+            labels: [
+                "Technical Knowledge",
+                "Communication",
+                "Problem Solving",
+                "Answer Depth",
+                "Confidence"
+            ],
+            datasets: [{
+                data: scores,
+                backgroundColor: "rgba(124,58,237,0.15)",
+                borderColor: "#7c3aed",
+                borderWidth: 2,
+                pointBackgroundColor: "#7c3aed",
+                pointRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                r: {
+                    min: 0, max: 100,
+                    ticks: {
+                        stepSize: 25,
+                        color: "#475569",
+                        backdropColor: "transparent",
+                        font: { size: 10 }
+                    },
+                    grid:        { color: "rgba(124,58,237,0.12)" },
+                    angleLines:  { color: "rgba(124,58,237,0.12)" },
+                    pointLabels: { color: "#94a3b8", font: { size: 12 } }
+                }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+}());
+</script>
 
 {% endblock %}

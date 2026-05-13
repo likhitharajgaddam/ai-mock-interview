@@ -2,93 +2,243 @@
 {% block content %}
 
 <style>
+/* ── Interview card ─────────────────────────────────────── */
+.interview-wrap {
+    max-width: 760px;
+    width: 100%;
+    margin: 0 auto;
+}
+
 .interview-card {
-    background: rgba(15, 23, 42, 0.96);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(124,58,237,0.25);
-    border-radius: 16px;
-    box-shadow: 0 0 40px rgba(124,58,237,0.15);
+    background: rgba(13, 18, 36, 0.97);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 20px;
+    box-shadow: 0 0 60px rgba(124,58,237,0.12), 0 20px 40px rgba(0,0,0,0.4);
+    padding: 36px;
     color: #ffffff;
+    transition: box-shadow 0.3s ease;
 }
 
-.interview-card textarea {
-    background: rgba(30, 41, 59, 0.95);
-    border: 1px solid rgba(124,58,237,0.4);
-    color: #ffffff !important;
+/* ── AI interviewer bar ─────────────────────────────────── */
+.ai-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(79,70,229,0.1);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 24px;
 }
+.ai-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#4f46e5,#7c3aed);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(124,58,237,0.5);
+}
+.ai-label { font-size: 13px; color: #a78bfa !important; font-weight: 600; }
+.ai-status { font-size: 12px; color: #64748b !important; }
 
-.progress {
+/* ── Progress ───────────────────────────────────────────── */
+.progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.progress-label { font-size: 13px; color: #94a3b8 !important; }
+.q-counter {
+    font-size: 13px; font-weight: 700;
+    color: #a78bfa !important;
+    background: rgba(124,58,237,0.15);
+    padding: 3px 10px; border-radius: 20px;
+}
+.progress-track {
+    height: 6px;
     background: rgba(30,41,59,0.8);
-    border-radius: 10px;
-    height: 8px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+    border-radius: 6px;
+    transition: width 0.6s ease;
 }
 
-.progress-bar {
-    background: linear-gradient(90deg,#4f46e5,#7c3aed);
+/* ── Difficulty badge ───────────────────────────────────── */
+.diff-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
 }
-.interview-card button {
+.diff-easy   { background: rgba(16,185,129,0.15); color: #6ee7b7 !important; border: 1px solid rgba(16,185,129,0.3); }
+.diff-medium { background: rgba(245,158,11,0.15);  color: #fcd34d !important; border: 1px solid rgba(245,158,11,0.3); }
+.diff-hard   { background: rgba(239,68,68,0.15);   color: #fca5a5 !important; border: 1px solid rgba(239,68,68,0.3); }
+
+/* ── Question text ──────────────────────────────────────── */
+.question-box {
+    background: rgba(30,41,59,0.5);
+    border-left: 3px solid #7c3aed;
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+.question-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f1f5f9 !important;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Textarea ───────────────────────────────────────────── */
+.answer-textarea {
+    background: rgba(15,23,42,0.9) !important;
+    border: 1px solid rgba(124,58,237,0.35) !important;
+    border-radius: 12px !important;
+    color: #e2e8f0 !important;
+    font-size: 15px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    padding: 14px 16px !important;
+}
+.answer-textarea:focus {
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.2) !important;
+    outline: none;
+}
+.answer-textarea::placeholder { color: #475569 !important; }
+
+/* ── Submit button ──────────────────────────────────────── */
+.submit-btn {
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
     border: none;
-    color: #ffffff !important;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    border-radius: 12px;
+    color: #fff !important;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px;
+    width: 100%;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+    letter-spacing: 0.3px;
+}
+.submit-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+/* ── AI thinking overlay ────────────────────────────────── */
+#ai-thinking {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(79,70,229,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #a78bfa !important;
+}
+.dot-pulse { display: flex; gap: 5px; }
+.dot-pulse span {
+    width: 7px; height: 7px;
+    background: #7c3aed;
+    border-radius: 50%;
+    animation: dp 1.2s infinite ease-in-out;
+}
+.dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+.dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dp {
+    0%,80%,100% { transform: scale(0.6); opacity: 0.4; }
+    40%          { transform: scale(1);   opacity: 1; }
 }
 
-.interview-card button:hover {
-    color: #ffffff !important;
-    opacity: 0.95;
+/* ── Hint ───────────────────────────────────────────────── */
+.hint-text {
+    font-size: 12px;
+    color: #475569 !important;
+    text-align: center;
+    margin-top: 10px;
 }
 </style>
 
-<div class="d-flex justify-content-center">
-<div class="card interview-card shadow-lg p-4" style="max-width:750px;width:100%;">
+<div class="interview-wrap">
+<div class="interview-card">
 
-    <h4 class="text-center mb-3">
-        {{ role.name }} Interview
-    </h4>
-
-    <!-- Progress -->
-    <div class="mb-4">
-        <div class="d-flex justify-content-between mb-2">
-            <span>Progress</span>
-            <span>Question {{ question_number }} of 8</span>
-        </div>
-
-        <div class="progress">
-            <div class="progress-bar"
-                 style="width: {{ progress_percentage }}%">
-            </div>
+    <!-- AI Interviewer bar -->
+    <div class="ai-bar">
+        <div class="ai-avatar">🤖</div>
+        <div>
+            <div class="ai-label">AI Interviewer</div>
+            <div class="ai-status">{{ role.name }} Technical Round</div>
         </div>
     </div>
 
+    <!-- Progress -->
+    <div class="progress-row">
+        <span class="progress-label">Progress</span>
+        <span class="q-counter">{{ question_number }} / {{ max_questions }}</span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" style="width:{{ progress_percentage }}%"></div>
+    </div>
+
+    <!-- Difficulty badge -->
+    {% if question_number <= 2 %}
+        <span class="diff-badge diff-easy">EASY</span>
+    {% elif question_number <= 5 %}
+        <span class="diff-badge diff-medium">MEDIUM</span>
+    {% else %}
+        <span class="diff-badge diff-hard">HARD</span>
+    {% endif %}
+
     <!-- Question -->
-    <div class="mb-4">
-        <p style="font-size:18px;font-weight:500;">
-            {{ question }}
-        </p>
+    <div class="question-box">
+        <p class="question-text">{{ question }}</p>
     </div>
 
     {% if error %}
-        <div class="alert alert-danger">
-            {{ error }}
-        </div>
+    <div class="alert alert-danger rounded-3 mb-3" style="font-size:14px;">
+        {{ error }}
+    </div>
     {% endif %}
 
-    <!-- FORM -->
+    <!-- Answer form -->
     <form method="POST" action="{% url 'start_interview' role.id %}" id="answerForm">
         {% csrf_token %}
 
-        <textarea 
-            name="answer" 
+        <textarea
+            name="answer"
             id="answerInput"
-            class="form-control mb-3"
+            class="form-control answer-textarea mb-3"
             rows="6"
-            placeholder="Write your answer in detail..."
+            placeholder="Type your answer here… (Shift+Enter for new line, Enter to submit)"
             required></textarea>
 
-        <button type="submit" class="btn w-100">
-            Submit Answer
+        <button type="submit" class="submit-btn" id="submitBtn">
+            Submit Answer →
         </button>
+
+        <!-- AI thinking animation (shown after submit) -->
+        <div id="ai-thinking">
+            <div class="dot-pulse">
+                <span></span><span></span><span></span>
+            </div>
+            <span>AI is analysing your response…</span>
+        </div>
+
+        <p class="hint-text">Press Enter to submit · Shift+Enter for new line</p>
     </form>
 
 </div>
@@ -96,39 +246,37 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
     var form     = document.getElementById("answerForm");
     var textarea = document.getElementById("answerInput");
-    var button   = form.querySelector("button");
+    var btn      = document.getElementById("submitBtn");
+    var thinking = document.getElementById("ai-thinking");
 
-    // Always clear the textarea on load — prevents browser autofill
-    // repeating the previous answer on the next question
+    // Clear autofill + focus
     textarea.value = "";
-
-    // Auto-focus so user can type immediately without clicking
     textarea.focus();
 
     var submitted = false;
 
-    // Submit on Enter (Shift+Enter = newline)
+    function doSubmit() {
+        if (submitted) return;
+        if (textarea.value.trim().length === 0) return;
+        submitted = true;
+        btn.disabled = true;
+        btn.textContent = "Submitting…";
+        thinking.style.display = "flex";
+        form.submit();
+    }
+
     textarea.addEventListener("keydown", function (e) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            if (!submitted && textarea.value.trim().length > 0) {
-                submitted = true;
-                button.disabled = true;
-                button.textContent = "Submitting...";
-                form.submit();
-            }
+            doSubmit();
         }
     });
 
-    // Prevent double-submit on button click
-    form.addEventListener("submit", function () {
-        if (submitted) { return false; }
-        submitted = true;
-        button.disabled = true;
-        button.textContent = "Submitting...";
+    form.addEventListener("submit", function (e) {
+        if (submitted) { e.preventDefault(); return; }
+        doSubmit();
     });
 });
 </script>
