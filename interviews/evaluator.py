@@ -1,14 +1,15 @@
 """
 AI Evaluation Engine
 ====================
-Production-safe. Never raises. Never returns a generic string.
+Uses direct HTTPS requests to Groq API — no SDK dependency.
+This bypasses all httpx/proxies compatibility issues entirely.
 
 Pipeline:
-  1. Quality gate  — detect empty / gibberish before wasting an API call
-  2. Groq API call — structured JSON prompt, 3 retries + exponential backoff
+  1. Quality gate  — skip API for empty/gibberish answers
+  2. Direct HTTP   — POST to api.groq.com/openai/v1/chat/completions
   3. JSON extract  — 3 strategies (direct, regex, strip fences)
-  4. Normalise     — clamp scores, validate enums, ensure list fields
-  5. Heuristic     — meaningful fallback when API is completely unavailable
+  4. Normalise     — clamp scores, validate fields
+  5. Heuristic     — meaningful fallback if API completely unavailable
 """
 
 import json
@@ -17,42 +18,35 @@ import math
 import os
 import re
 import time
+import urllib.request
+import urllib.error
 from typing import Dict, Optional, Tuple
 
 logger = logging.getLogger("interviews.evaluator")
 
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL   = "llama-3.3-70b-versatile"
+
 # ---------------------------------------------------------------------------
-# Groq client — lazy import, never crashes startup
+# Key validation
 # ---------------------------------------------------------------------------
 
-def _build_groq_client():
-    # type: () -> Optional[object]
+def _get_api_key():
+    # type: () -> Optional[str]
     key = os.environ.get("GROQ_API_KEY", "").strip()
     if not key:
         logger.warning(
-            "[GROQ] GROQ_API_KEY environment variable is NOT set. "
-            "Go to Render > Environment and add: GROQ_API_KEY = gsk_..."
+            "[GROQ] GROQ_API_KEY is NOT set. "
+            "Add it in Render > Environment > GROQ_API_KEY"
         )
         return None
     if not key.startswith("gsk_"):
         logger.warning(
-            "[GROQ] GROQ_API_KEY looks invalid (should start with 'gsk_'). "
-            "Current value starts with: %s", key[:6]
+            "[GROQ] Key format looks wrong (expected gsk_...). "
+            "First 6 chars: %s", key[:6]
         )
-    try:
-        from groq import Groq  # type: ignore
-        client = Groq(api_key=key)
-        logger.info("[GROQ] Client initialised successfully.")
-        return client
-    except ImportError:
-        logger.error("[GROQ] groq package not installed. Check requirements.txt.")
-        return None
-    except Exception as exc:
-        logger.error("[GROQ] Client init failed: %s", exc)
-        return None
-
-
-_groq_client = _build_groq_client()
+    logger.info("[GROQ] API key loaded. Preview: %s...%s", key[:8], key[-4:])
+    return key
 
 # ---------------------------------------------------------------------------
 # Quality gate
@@ -60,15 +54,15 @@ _groq_client = _build_groq_client()
 
 def _is_low_quality(answer):
     # type: (str) -> Tuple[bool, str]
-    stripped = answer.strip()
-    if not stripped:
+    s = answer.strip()
+    if not s:
         return True, "empty"
-    if len(stripped) < 10:
+    if len(s) < 10:
         return True, "too_short"
-    alpha = sum(1 for c in stripped if c.isalpha())
-    if len(stripped) > 5 and (alpha / len(stripped)) < 0.35:
+    alpha = sum(1 for c in s if c.isalpha())
+    if len(s) > 5 and (alpha / len(s)) < 0.35:
         return True, "gibberish"
-    if len(stripped.split()) < 3:
+    if len(s.split()) < 3:
         return True, "too_short"
     return False, ""
 
@@ -80,66 +74,50 @@ def _low_quality_result(reason, question):
         "too_short": "The answer is too brief to evaluate meaningfully.",
         "gibberish": "The answer appears to be random input and does not address the question.",
     }
-    feedback = msgs.get(reason, "The answer could not be evaluated.")
+    fb = msgs.get(reason, "The answer could not be evaluated.")
     return {
-        "technical_score":     0,
-        "communication_score": 0,
-        "confidence_score":    0,
-        "answer_quality":      "No Answer",
-        "strengths":           [],
-        "weaknesses":          [feedback],
-        "improvement_tips":    [
+        "technical_score": 0, "communication_score": 0, "confidence_score": 0,
+        "answer_quality": "No Answer", "strengths": [], "weaknesses": [fb],
+        "improvement_tips": [
             "Please provide a genuine answer to: '{}'".format(question),
             "Aim for at least 2-3 sentences covering the core concept.",
         ],
-        "follow_up_questions": [],
-        "overall_score":       0,
-        "feedback":            feedback,
+        "follow_up_questions": [], "overall_score": 0, "feedback": fb,
     }
 
 # ---------------------------------------------------------------------------
-# Prompt — instructs model to return ONLY JSON
+# Prompts
 # ---------------------------------------------------------------------------
 
-_SYSTEM_PROMPT = "\n".join([
-    "You are a strict senior technical interviewer at a FAANG-level company.",
-    "Evaluate the candidate answer and return ONLY a valid JSON object.",
-    "Do NOT include markdown, code fences, or any text outside the JSON.",
-    "",
-    "Required JSON schema:",
-    "{",
-    '  "technical_score": <integer 0-40>,',
-    '  "communication_score": <integer 0-30>,',
-    '  "confidence_score": <integer 0-30>,',
-    '  "answer_quality": <"Excellent"|"Good"|"Average"|"Poor"|"No Answer">,',
-    '  "strengths": [<string>, ...],',
-    '  "weaknesses": [<string>, ...],',
-    '  "improvement_tips": [<string>, ...],',
-    '  "follow_up_questions": [<string>, ...]',
-    "}",
-    "",
-    "Scoring guide:",
-    "  technical_score:     accuracy, depth, completeness of technical content (0-40)",
-    "  communication_score: clarity, structure, conciseness (0-30)",
-    "  confidence_score:    use of examples, specificity, assertiveness (0-30)",
-    "  Total max = 100",
-    "",
-    "Be strict and realistic:",
-    "  - Vague or 1-sentence answer  -> 0-15 total",
-    "  - Partial but relevant answer -> 20-50 total",
-    "  - Solid detailed answer       -> 60-85 total",
-    "  - Exceptional answer          -> 86-100 total",
-])
+_SYSTEM = (
+    "You are a strict senior technical interviewer at a FAANG-level company. "
+    "Evaluate the candidate answer and return ONLY a valid JSON object. "
+    "No markdown, no code fences, no text outside the JSON.\n\n"
+    "Required JSON schema:\n"
+    "{\n"
+    '  "technical_score": <integer 0-40>,\n'
+    '  "communication_score": <integer 0-30>,\n'
+    '  "confidence_score": <integer 0-30>,\n'
+    '  "answer_quality": <"Excellent"|"Good"|"Average"|"Poor"|"No Answer">,\n'
+    '  "strengths": [<string>, ...],\n'
+    '  "weaknesses": [<string>, ...],\n'
+    '  "improvement_tips": [<string>, ...],\n'
+    '  "follow_up_questions": [<string>, ...]\n'
+    "}\n\n"
+    "Scoring: technical(0-40) + communication(0-30) + confidence(0-30) = total(0-100)\n"
+    "Vague 1-sentence answer: 0-15. Partial answer: 20-50. "
+    "Solid detailed answer: 60-85. Exceptional: 86-100."
+)
 
 
-def _user_prompt(role, question, answer):
+def _user_msg(role, question, answer):
     # type: (str, str, str) -> str
     return (
-        "Role: {role}\n\n"
-        "Interview Question: {question}\n\n"
-        "Candidate Answer: {answer}\n\n"
-        "Return the JSON evaluation object now."
-    ).format(role=role, question=question, answer=answer)
+        "Role: {}\n\n"
+        "Interview Question: {}\n\n"
+        "Candidate Answer: {}\n\n"
+        "Return the JSON evaluation now."
+    ).format(role, question, answer)
 
 # ---------------------------------------------------------------------------
 # JSON extraction — 3 strategies
@@ -147,59 +125,66 @@ def _user_prompt(role, question, answer):
 
 def _extract_json(text):
     # type: (str) -> Optional[Dict]
-    # Strategy 1: direct parse
     try:
         return json.loads(text.strip())
     except (json.JSONDecodeError, ValueError):
         pass
-
-    # Strategy 2: find outermost { ... } block
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if match:
         try:
             return json.loads(match.group())
         except (json.JSONDecodeError, ValueError):
             pass
-
-    # Strategy 3: strip markdown fences then parse
     cleaned = re.sub(r"```(?:json)?", "", text).strip()
     try:
         return json.loads(cleaned)
     except (json.JSONDecodeError, ValueError):
         pass
-
-    logger.warning("[GROQ] JSON extraction failed. Raw: %s", text[:400])
+    logger.warning("[GROQ] JSON extraction failed. Raw: %.300s", text)
     return None
 
 # ---------------------------------------------------------------------------
-# API call with retry + exponential backoff
+# Direct HTTP call — no SDK, no proxy issues
 # ---------------------------------------------------------------------------
 
 _MAX_RETRIES = 3
-_BASE_DELAY  = 1.0  # seconds
+_BASE_DELAY  = 1.0
 
 
-def _call_groq(client, role, question, answer):
-    # type: (object, str, str, str) -> Optional[Dict]
-    prompt = _user_prompt(role, question, answer)
+def _call_groq_http(api_key, role, question, answer):
+    # type: (str, str, str, str) -> Optional[Dict]
+    """
+    Calls Groq API directly via urllib — zero external dependencies beyond
+    the standard library. Completely bypasses httpx/proxies issues.
+    """
+    payload = json.dumps({
+        "model": GROQ_MODEL,
+        "messages": [
+            {"role": "system", "content": _SYSTEM},
+            {"role": "user",   "content": _user_msg(role, question, answer)},
+        ],
+        "temperature": 0.3,
+        "max_tokens":  900,
+    }).encode("utf-8")
+
+    headers = {
+        "Authorization": "Bearer {}".format(api_key),
+        "Content-Type":  "application/json",
+    }
 
     for attempt in range(1, _MAX_RETRIES + 1):
         try:
-            logger.info("[GROQ] Attempt %d/%d for question: %.60s",
-                        attempt, _MAX_RETRIES, question)
+            logger.info("[GROQ] HTTP attempt %d/%d", attempt, _MAX_RETRIES)
 
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user",   "content": prompt},
-                ],
-                temperature=0.3,
-                max_tokens=900,
+            req  = urllib.request.Request(
+                GROQ_API_URL, data=payload, headers=headers, method="POST"
             )
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                body = resp.read().decode("utf-8")
 
-            raw = response.choices[0].message.content
-            logger.debug("[GROQ] Raw response: %s", raw[:500])
+            data = json.loads(body)
+            raw  = data["choices"][0]["message"]["content"]
+            logger.debug("[GROQ] Raw response: %.400s", raw)
 
             parsed = _extract_json(raw)
             if parsed is not None:
@@ -208,8 +193,13 @@ def _call_groq(client, role, question, answer):
 
             logger.warning("[GROQ] Attempt %d: JSON parse failed.", attempt)
 
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            logger.error("[GROQ] HTTP %d on attempt %d: %s", exc.code, attempt, body[:300])
+        except urllib.error.URLError as exc:
+            logger.error("[GROQ] URL error on attempt %d: %s", attempt, exc.reason)
         except Exception as exc:
-            logger.error("[GROQ] Attempt %d error: %s: %s",
+            logger.error("[GROQ] Unexpected error on attempt %d: %s: %s",
                          attempt, type(exc).__name__, exc)
 
         if attempt < _MAX_RETRIES:
@@ -221,16 +211,16 @@ def _call_groq(client, role, question, answer):
     return None
 
 # ---------------------------------------------------------------------------
-# Normalise scores
+# Normalise
 # ---------------------------------------------------------------------------
 
 def _normalise(data):
     # type: (Dict) -> Dict
-    def clamp(val, lo, hi, default):
+    def clamp(v, lo, hi, d):
         try:
-            return max(lo, min(hi, int(val)))
+            return max(lo, min(hi, int(v)))
         except (TypeError, ValueError):
-            return default
+            return d
 
     data["technical_score"]     = clamp(data.get("technical_score"),     0, 40, 0)
     data["communication_score"] = clamp(data.get("communication_score"), 0, 30, 0)
@@ -240,56 +230,50 @@ def _normalise(data):
     if data.get("answer_quality") not in valid:
         data["answer_quality"] = "Average"
 
-    for field in ("strengths", "weaknesses", "improvement_tips", "follow_up_questions"):
-        if not isinstance(data.get(field), list):
-            data[field] = []
-        # Ensure each item is a plain string
-        data[field] = [str(x) for x in data[field] if x]
+    for f in ("strengths", "weaknesses", "improvement_tips", "follow_up_questions"):
+        if not isinstance(data.get(f), list):
+            data[f] = []
+        data[f] = [str(x) for x in data[f] if x]
 
     return data
 
 # ---------------------------------------------------------------------------
-# Heuristic fallback — meaningful, never generic
+# Heuristic fallback
 # ---------------------------------------------------------------------------
 
 def _heuristic(question, answer):
     # type: (str, str) -> Dict
-    words      = answer.strip().split()
-    wc         = len(words)
-    alpha_r    = sum(1 for c in answer if c.isalpha()) / max(len(answer), 1)
+    wc = len(answer.strip().split())
+    ar = sum(1 for c in answer if c.isalpha()) / max(len(answer), 1)
 
-    if wc >= 80 and alpha_r > 0.7:
-        tech, comm, conf = 22, 16, 14
-        quality   = "Average"
-        strengths = ["Detailed response with good length."]
-        weak      = ["Could not be AI-evaluated — please ensure GROQ_API_KEY is set on Render."]
+    if wc >= 80 and ar > 0.7:
+        t, c, f = 22, 16, 14
+        q = "Average"
+        s = ["Detailed response provided."]
+        w = ["AI evaluation temporarily unavailable."]
     elif wc >= 30:
-        tech, comm, conf = 12, 10, 8
-        quality   = "Poor"
-        strengths = []
-        weak      = ["Answer is brief.", "AI evaluation unavailable — check GROQ_API_KEY on Render."]
+        t, c, f = 12, 10, 8
+        q = "Poor"
+        s = []
+        w = ["Answer is brief.", "AI evaluation temporarily unavailable."]
     else:
-        tech, comm, conf = 4, 4, 2
-        quality   = "Poor"
-        strengths = []
-        weak      = ["Answer is very short.", "AI evaluation unavailable — check GROQ_API_KEY on Render."]
+        t, c, f = 4, 4, 2
+        q = "Poor"
+        s = []
+        w = ["Answer is very short.", "AI evaluation temporarily unavailable."]
 
     return {
-        "technical_score":     tech,
-        "communication_score": comm,
-        "confidence_score":    conf,
-        "answer_quality":      quality,
-        "strengths":           strengths,
-        "weaknesses":          weak,
+        "technical_score": t, "communication_score": c, "confidence_score": f,
+        "answer_quality": q, "strengths": s, "weaknesses": w,
         "improvement_tips": [
-            "Provide a detailed explanation covering the what, why, and how.",
-            "For '{}', structure your answer with examples.".format(question[:80]),
+            "Explain the what, why, and how with concrete examples.",
+            "For '{}', cover the core concept in 3-4 sentences.".format(question[:80]),
         ],
         "follow_up_questions": [],
-        "overall_score":       tech + comm + conf,
+        "overall_score": t + c + f,
         "feedback": (
-            "Scored using length-based heuristics (AI unavailable). "
-            "To enable full AI evaluation, add GROQ_API_KEY to Render environment variables."
+            "Heuristic score (AI temporarily unavailable). "
+            "Check /interview/api/status/ to diagnose."
         ),
     }
 
@@ -299,31 +283,22 @@ def _heuristic(question, answer):
 
 def evaluate_answer(question, answer, role):
     # type: (str, str, str) -> Dict
-    """
-    Always returns a dict. Never raises.
-    Keys: technical_score, communication_score, confidence_score,
-          answer_quality, strengths, weaknesses, improvement_tips,
-          follow_up_questions, overall_score, feedback
-    """
+    """Always returns a dict. Never raises."""
+
     # Step 1 — quality gate
     low_q, reason = _is_low_quality(answer)
     if low_q:
-        logger.info("[EVAL] Low-quality answer (%s) — skipping API.", reason)
+        logger.info("[EVAL] Low-quality (%s) — skipping API.", reason)
         return _low_quality_result(reason, question)
 
-    # Step 2 — ensure client (re-check if key was added after boot)
-    global _groq_client
-    if _groq_client is None:
-        _groq_client = _build_groq_client()
-
-    if _groq_client is None:
-        logger.warning("[EVAL] No Groq client — using heuristic.")
+    # Step 2 — get key
+    api_key = _get_api_key()
+    if not api_key:
         return _heuristic(question, answer)
 
-    # Step 3 — call AI
-    data = _call_groq(_groq_client, role, question, answer)
+    # Step 3 — call API
+    data = _call_groq_http(api_key, role, question, answer)
     if data is None:
-        logger.error("[EVAL] Groq failed — using heuristic.")
         return _heuristic(question, answer)
 
     # Step 4 — normalise
@@ -333,7 +308,6 @@ def evaluate_answer(question, answer, role):
                + data["confidence_score"])
     data["overall_score"] = overall
 
-    # Build readable feedback string
     parts = []
     if data["strengths"]:
         parts.append("Strengths: " + "; ".join(data["strengths"][:2]) + ".")

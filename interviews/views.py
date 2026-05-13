@@ -496,45 +496,57 @@ def generate_ai_question(request):
 def ai_status(request):
     """
     Diagnostic endpoint — visit /interview/api/status/ in browser.
-    Shows whether GROQ_API_KEY is set and whether the API responds.
-    Safe: never prints the full key.
+    Tests the Groq API directly via HTTP (no SDK).
     """
-    import os
+    import os, urllib.request, urllib.error, json as _json
+
     key = os.environ.get("GROQ_API_KEY", "").strip()
 
     if not key:
         return JsonResponse({
             "groq_key_set": False,
-            "groq_key_format": "MISSING",
-            "groq_api_test": "skipped",
             "status": "ERROR — GROQ_API_KEY not set in Render environment",
         })
 
-    key_preview = key[:8] + "..." + key[-4:]
-    key_format_ok = key.startswith("gsk_")
+    key_preview    = key[:8] + "..." + key[-4:]
+    key_format_ok  = key.startswith("gsk_")
+    api_result     = "not_tested"
+    api_error      = None
 
-    # Try a minimal live API call
-    api_result = "not_tested"
-    api_error  = None
     try:
-        from groq import Groq
-        client = Groq(api_key=key)
-        resp = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": "Reply with the single word: working"}],
-            max_tokens=10,
-            temperature=0,
+        payload = _json.dumps({
+            "model": "llama-3.3-70b-versatile",
+            "messages": [{"role": "user", "content": "Reply with one word: working"}],
+            "max_tokens": 10,
+            "temperature": 0,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=payload,
+            headers={
+                "Authorization": "Bearer {}".format(key),
+                "Content-Type": "application/json",
+            },
+            method="POST",
         )
-        api_result = resp.choices[0].message.content.strip()
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = _json.loads(resp.read().decode("utf-8"))
+        api_result = body["choices"][0]["message"]["content"].strip()
+
+    except urllib.error.HTTPError as exc:
+        api_error  = "HTTP {}: {}".format(exc.code, exc.read().decode("utf-8", errors="replace")[:200])
+        api_result = "failed"
     except Exception as exc:
         api_error  = "{}: {}".format(type(exc).__name__, str(exc))
         api_result = "failed"
 
     return JsonResponse({
-        "groq_key_set":    True,
-        "groq_key_preview": key_preview,
+        "groq_key_set":       True,
+        "groq_key_preview":   key_preview,
         "groq_key_format_ok": key_format_ok,
-        "groq_api_test":   api_result,
-        "groq_api_error":  api_error,
-        "status": "OK" if api_result not in ("failed", "not_tested") else "ERROR",
+        "groq_api_test":      api_result,
+        "groq_api_error":     api_error,
+        "method":             "direct_http",
+        "status":             "OK" if api_result not in ("failed", "not_tested") else "ERROR",
     })
