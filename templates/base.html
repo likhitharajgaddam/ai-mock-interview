@@ -7,8 +7,7 @@
 <style>
 
 /* ═══════════════════════════════════════════════════════════════
-   THEME SYSTEM — CSS custom properties on :root
-   Default theme values. Overridden by data-theme attribute on <body>.
+   THEME SYSTEM — CSS custom properties + per-theme overrides
 ═══════════════════════════════════════════════════════════════ */
 :root {
     --accent:        #7c3aed;
@@ -16,100 +15,296 @@
     --accent-glow:   rgba(124,58,237,0.4);
     --accent-soft:   rgba(124,58,237,0.12);
     --accent-border: rgba(124,58,237,0.25);
-    --bg-primary:    #0f172a;
-    --bg-secondary:  #020617;
-    --bg-card:       rgba(13,18,36,0.97);
-    --particle-col:  #7c3aed;
-    --sphere-col:    0x7c3aed;
     --grad-btn:      linear-gradient(90deg,#4f46e5,#7c3aed);
     --grad-body:     linear-gradient(135deg,#0f172a,#020617);
+    --nav-bg:        rgba(15,23,42,0.9);
+    --card-bg:       rgba(13,18,36,0.97);
+    --font-family:   'Inter', sans-serif;
+    --transition-theme: background 0.6s ease, border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* ── Neon Purple ── */
+/* ── Theme transition on body ── */
+body { transition: background 0.6s ease; }
+.glass, .card, .role-card, .i-card, .result-card, .ans-card, .hist-card, .stat-g {
+    transition: var(--transition-theme) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   NEON PURPLE — Electric magenta, cyber gaming
+════════════════════════════════════════════════════════════════ */
 body[data-theme="neon"] {
     --accent:        #d946ef;
     --accent2:       #a21caf;
-    --accent-glow:   rgba(217,70,239,0.5);
-    --accent-soft:   rgba(217,70,239,0.1);
-    --accent-border: rgba(217,70,239,0.3);
-    --bg-primary:    #0d0014;
-    --bg-secondary:  #1a0028;
-    --bg-card:       rgba(20,0,35,0.97);
-    --particle-col:  #d946ef;
+    --accent-glow:   rgba(217,70,239,0.6);
+    --accent-soft:   rgba(217,70,239,0.12);
+    --accent-border: rgba(217,70,239,0.35);
     --grad-btn:      linear-gradient(90deg,#a21caf,#d946ef);
-    --grad-body:     linear-gradient(135deg,#0d0014,#1a0028);
+    --grad-body:     linear-gradient(135deg,#0d0014 0%,#1a0028 50%,#0d0014 100%);
+    --nav-bg:        rgba(13,0,20,0.95);
+    --card-bg:       rgba(20,0,35,0.97);
 }
+body[data-theme="neon"] { background: var(--grad-body) !important; }
+body[data-theme="neon"] .navbar { background: var(--nav-bg) !important; border-bottom: 1px solid rgba(217,70,239,0.3); }
+body[data-theme="neon"] .glass,
+body[data-theme="neon"] .card,
+body[data-theme="neon"] .i-card,
+body[data-theme="neon"] .role-card {
+    background: rgba(20,0,35,0.97) !important;
+    border-color: rgba(217,70,239,0.3) !important;
+    box-shadow: 0 0 30px rgba(217,70,239,0.12) !important;
+}
+body[data-theme="neon"] .glass:hover,
+body[data-theme="neon"] .role-card:hover {
+    box-shadow: 0 0 50px rgba(217,70,239,0.3), 0 0 100px rgba(217,70,239,0.1) !important;
+    border-color: rgba(217,70,239,0.6) !important;
+}
+body[data-theme="neon"] .btn-outline-light { border-color: rgba(217,70,239,0.5) !important; color: #f0abfc !important; }
+body[data-theme="neon"] .brand-gradient { background: linear-gradient(90deg,#d946ef,#f0abfc); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+body[data-theme="neon"] .sec-label { color: #d946ef !important; }
+body[data-theme="neon"] .sec-label::after { background: rgba(217,70,239,0.25); }
+/* Animated neon border pulse on cards */
+body[data-theme="neon"] .glass::before {
+    content: ""; position: absolute; inset: -1px; border-radius: inherit;
+    background: linear-gradient(90deg,#d946ef,#a21caf,#d946ef);
+    background-size: 200% 100%;
+    animation: neon-border 3s linear infinite;
+    z-index: -1; opacity: 0.4;
+}
+@keyframes neon-border { 0%{background-position:0%} 100%{background-position:200%} }
 
-/* ── Matrix Hacker ── */
+/* ════════════════════════════════════════════════════════════════
+   MATRIX HACKER — Terminal green, hacker workstation
+════════════════════════════════════════════════════════════════ */
 body[data-theme="matrix"] {
     --accent:        #00ff41;
     --accent2:       #00cc33;
-    --accent-glow:   rgba(0,255,65,0.4);
+    --accent-glow:   rgba(0,255,65,0.5);
     --accent-soft:   rgba(0,255,65,0.08);
-    --accent-border: rgba(0,255,65,0.25);
-    --bg-primary:    #000a00;
-    --bg-secondary:  #001400;
-    --bg-card:       rgba(0,12,0,0.97);
-    --particle-col:  #00ff41;
+    --accent-border: rgba(0,255,65,0.3);
     --grad-btn:      linear-gradient(90deg,#00cc33,#00ff41);
-    --grad-body:     linear-gradient(135deg,#000a00,#001400);
+    --grad-body:     linear-gradient(180deg,#000500 0%,#001000 100%);
+    --nav-bg:        rgba(0,8,0,0.97);
+    --card-bg:       rgba(0,10,0,0.97);
+    --font-family:   'Courier New', 'Lucida Console', monospace;
+}
+body[data-theme="matrix"] { background: var(--grad-body) !important; font-family: var(--font-family) !important; }
+body[data-theme="matrix"] .navbar { background: var(--nav-bg) !important; border-bottom: 1px solid rgba(0,255,65,0.25); }
+body[data-theme="matrix"] .glass,
+body[data-theme="matrix"] .card,
+body[data-theme="matrix"] .i-card,
+body[data-theme="matrix"] .role-card {
+    background: rgba(0,10,0,0.97) !important;
+    border-color: rgba(0,255,65,0.25) !important;
+    box-shadow: 0 0 20px rgba(0,255,65,0.08), inset 0 0 20px rgba(0,0,0,0.8) !important;
+}
+body[data-theme="matrix"] .glass:hover,
+body[data-theme="matrix"] .role-card:hover {
+    border-color: rgba(0,255,65,0.6) !important;
+    box-shadow: 0 0 40px rgba(0,255,65,0.2) !important;
+}
+body[data-theme="matrix"] h1,
+body[data-theme="matrix"] h2,
+body[data-theme="matrix"] h3,
+body[data-theme="matrix"] h4,
+body[data-theme="matrix"] h5,
+body[data-theme="matrix"] h6 { color: #00ff41 !important; text-shadow: 0 0 8px rgba(0,255,65,0.6); }
+body[data-theme="matrix"] .brand-gradient { background: #00ff41; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+body[data-theme="matrix"] .sec-label { color: #00ff41 !important; }
+body[data-theme="matrix"] .sec-label::after { background: rgba(0,255,65,0.2); }
+body[data-theme="matrix"] .btn-outline-light { border-color: rgba(0,255,65,0.4) !important; color: #00ff41 !important; }
+/* Scanline overlay */
+body[data-theme="matrix"]::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.015) 2px, rgba(0,255,65,0.015) 4px);
 }
 
-/* ── Synthwave ── */
+/* ════════════════════════════════════════════════════════════════
+   SYNTHWAVE — Retro pink/purple, vaporwave
+════════════════════════════════════════════════════════════════ */
 body[data-theme="synthwave"] {
     --accent:        #f72585;
     --accent2:       #7209b7;
-    --accent-glow:   rgba(247,37,133,0.5);
+    --accent-glow:   rgba(247,37,133,0.6);
     --accent-soft:   rgba(247,37,133,0.1);
-    --accent-border: rgba(247,37,133,0.3);
-    --bg-primary:    #10002b;
-    --bg-secondary:  #240046;
-    --bg-card:       rgba(16,0,43,0.97);
-    --particle-col:  #f72585;
+    --accent-border: rgba(247,37,133,0.35);
     --grad-btn:      linear-gradient(90deg,#7209b7,#f72585);
-    --grad-body:     linear-gradient(135deg,#10002b,#240046);
+    --grad-body:     linear-gradient(180deg,#10002b 0%,#3a0068 40%,#10002b 100%);
+    --nav-bg:        rgba(16,0,43,0.95);
+    --card-bg:       rgba(20,0,50,0.97);
+}
+body[data-theme="synthwave"] { background: var(--grad-body) !important; }
+body[data-theme="synthwave"] .navbar { background: var(--nav-bg) !important; border-bottom: 1px solid rgba(247,37,133,0.3); }
+body[data-theme="synthwave"] .glass,
+body[data-theme="synthwave"] .card,
+body[data-theme="synthwave"] .i-card,
+body[data-theme="synthwave"] .role-card {
+    background: rgba(20,0,50,0.97) !important;
+    border-color: rgba(247,37,133,0.3) !important;
+    box-shadow: 0 0 30px rgba(247,37,133,0.1), 0 0 60px rgba(114,9,183,0.08) !important;
+}
+body[data-theme="synthwave"] .glass:hover,
+body[data-theme="synthwave"] .role-card:hover {
+    border-color: rgba(247,37,133,0.6) !important;
+    box-shadow: 0 0 50px rgba(247,37,133,0.25), 0 0 100px rgba(114,9,183,0.15) !important;
+}
+body[data-theme="synthwave"] .brand-gradient { background: linear-gradient(90deg,#f72585,#b5179e); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+body[data-theme="synthwave"] .sec-label { color: #f72585 !important; }
+body[data-theme="synthwave"] .sec-label::after { background: rgba(247,37,133,0.25); }
+body[data-theme="synthwave"] .btn-outline-light { border-color: rgba(247,37,133,0.5) !important; color: #ff85c2 !important; }
+/* Retro grid horizon line */
+body[data-theme="synthwave"]::before {
+    content: ""; position: fixed; bottom: 0; left: 0; right: 0; height: 40vh;
+    pointer-events: none; z-index: 0;
+    background:
+        linear-gradient(transparent 0%, rgba(247,37,133,0.04) 100%),
+        repeating-linear-gradient(90deg, rgba(247,37,133,0.06) 0px, rgba(247,37,133,0.06) 1px, transparent 1px, transparent 60px),
+        repeating-linear-gradient(0deg, rgba(247,37,133,0.06) 0px, rgba(247,37,133,0.06) 1px, transparent 1px, transparent 40px);
+    perspective: 200px;
 }
 
-/* ── Jarvis AI ── */
+/* ════════════════════════════════════════════════════════════════
+   JARVIS AI — Iron Man blue, holographic HUD
+════════════════════════════════════════════════════════════════ */
 body[data-theme="jarvis"] {
     --accent:        #00d4ff;
     --accent2:       #0066cc;
-    --accent-glow:   rgba(0,212,255,0.4);
+    --accent-glow:   rgba(0,212,255,0.5);
     --accent-soft:   rgba(0,212,255,0.08);
-    --accent-border: rgba(0,212,255,0.25);
-    --bg-primary:    #000d1a;
-    --bg-secondary:  #001a33;
-    --bg-card:       rgba(0,10,20,0.97);
-    --particle-col:  #00d4ff;
+    --accent-border: rgba(0,212,255,0.3);
     --grad-btn:      linear-gradient(90deg,#0066cc,#00d4ff);
-    --grad-body:     linear-gradient(135deg,#000d1a,#001a33);
+    --grad-body:     linear-gradient(135deg,#000d1a 0%,#001a33 50%,#000d1a 100%);
+    --nav-bg:        rgba(0,10,20,0.97);
+    --card-bg:       rgba(0,12,24,0.97);
 }
+body[data-theme="jarvis"] { background: var(--grad-body) !important; }
+body[data-theme="jarvis"] .navbar { background: var(--nav-bg) !important; border-bottom: 1px solid rgba(0,212,255,0.25); }
+body[data-theme="jarvis"] .glass,
+body[data-theme="jarvis"] .card,
+body[data-theme="jarvis"] .i-card,
+body[data-theme="jarvis"] .role-card {
+    background: rgba(0,12,24,0.97) !important;
+    border-color: rgba(0,212,255,0.25) !important;
+    box-shadow: 0 0 30px rgba(0,212,255,0.1), inset 0 0 30px rgba(0,0,0,0.6) !important;
+}
+body[data-theme="jarvis"] .glass:hover,
+body[data-theme="jarvis"] .role-card:hover {
+    border-color: rgba(0,212,255,0.6) !important;
+    box-shadow: 0 0 50px rgba(0,212,255,0.25), 0 0 100px rgba(0,102,204,0.15) !important;
+}
+body[data-theme="jarvis"] h1,
+body[data-theme="jarvis"] h2,
+body[data-theme="jarvis"] h3 { color: #00d4ff !important; text-shadow: 0 0 12px rgba(0,212,255,0.5); }
+body[data-theme="jarvis"] .brand-gradient { background: linear-gradient(90deg,#00d4ff,#0099cc); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+body[data-theme="jarvis"] .sec-label { color: #00d4ff !important; }
+body[data-theme="jarvis"] .sec-label::after { background: rgba(0,212,255,0.2); }
+body[data-theme="jarvis"] .btn-outline-light { border-color: rgba(0,212,255,0.4) !important; color: #00d4ff !important; }
+/* HUD corner brackets on cards */
+body[data-theme="jarvis"] .glass::before,
+body[data-theme="jarvis"] .glass::after {
+    content: ""; position: absolute; width: 16px; height: 16px;
+    border-color: rgba(0,212,255,0.6); border-style: solid;
+    pointer-events: none;
+}
+body[data-theme="jarvis"] .glass::before { top: 6px; left: 6px; border-width: 2px 0 0 2px; border-radius: 2px 0 0 0; }
+body[data-theme="jarvis"] .glass::after  { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; border-radius: 0 0 2px 0; }
 
-/* ── Cyberpunk ── */
+/* ════════════════════════════════════════════════════════════════
+   CYBERPUNK — Neon yellow/orange, aggressive city
+════════════════════════════════════════════════════════════════ */
 body[data-theme="cyberpunk"] {
     --accent:        #ffd60a;
     --accent2:       #ff6b35;
-    --accent-glow:   rgba(255,214,10,0.4);
+    --accent-glow:   rgba(255,214,10,0.5);
     --accent-soft:   rgba(255,214,10,0.08);
-    --accent-border: rgba(255,214,10,0.3);
-    --bg-primary:    #0a0a0f;
-    --bg-secondary:  #1a0a00;
-    --bg-card:       rgba(10,8,0,0.97);
-    --particle-col:  #ffd60a;
+    --accent-border: rgba(255,214,10,0.35);
     --grad-btn:      linear-gradient(90deg,#ff6b35,#ffd60a);
-    --grad-body:     linear-gradient(135deg,#0a0a0f,#1a0a00);
+    --grad-body:     linear-gradient(135deg,#050508 0%,#0f0800 50%,#050508 100%);
+    --nav-bg:        rgba(5,5,8,0.98);
+    --card-bg:       rgba(8,6,0,0.97);
+}
+body[data-theme="cyberpunk"] { background: var(--grad-body) !important; }
+body[data-theme="cyberpunk"] .navbar { background: var(--nav-bg) !important; border-bottom: 2px solid rgba(255,214,10,0.4); }
+body[data-theme="cyberpunk"] .glass,
+body[data-theme="cyberpunk"] .card,
+body[data-theme="cyberpunk"] .i-card,
+body[data-theme="cyberpunk"] .role-card {
+    background: rgba(8,6,0,0.97) !important;
+    border-color: rgba(255,214,10,0.3) !important;
+    box-shadow: 0 0 20px rgba(255,214,10,0.08), 4px 4px 0 rgba(255,107,53,0.2) !important;
+    border-radius: 4px !important;
+}
+body[data-theme="cyberpunk"] .glass:hover,
+body[data-theme="cyberpunk"] .role-card:hover {
+    border-color: rgba(255,214,10,0.7) !important;
+    box-shadow: 0 0 40px rgba(255,214,10,0.2), 4px 4px 0 rgba(255,107,53,0.4) !important;
+    transform: translateY(-5px) skewX(-0.5deg) !important;
+}
+body[data-theme="cyberpunk"] h1,
+body[data-theme="cyberpunk"] h2,
+body[data-theme="cyberpunk"] h3 { color: #ffd60a !important; text-shadow: 2px 2px 0 rgba(255,107,53,0.5); }
+body[data-theme="cyberpunk"] .brand-gradient { background: linear-gradient(90deg,#ffd60a,#ff6b35); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+body[data-theme="cyberpunk"] .sec-label { color: #ffd60a !important; }
+body[data-theme="cyberpunk"] .sec-label::after { background: rgba(255,214,10,0.25); }
+body[data-theme="cyberpunk"] .btn-outline-light { border-color: rgba(255,214,10,0.5) !important; color: #ffd60a !important; }
+/* Glitch animation on hover */
+@keyframes glitch {
+    0%   { clip-path: inset(0 0 95% 0); transform: translate(-2px,0); }
+    20%  { clip-path: inset(30% 0 50% 0); transform: translate(2px,0); }
+    40%  { clip-path: inset(60% 0 20% 0); transform: translate(-1px,0); }
+    60%  { clip-path: inset(80% 0 5% 0);  transform: translate(1px,0); }
+    80%  { clip-path: inset(10% 0 80% 0); transform: translate(-2px,0); }
+    100% { clip-path: inset(0 0 95% 0);   transform: translate(0,0); }
 }
 
-/* ── Apply theme vars to elements ── */
-html, body {
-    background: var(--grad-body) !important;
+/* ── Apply theme vars to common elements ── */
+html, body { background: var(--grad-body) !important; }
+.form-control:focus { border-color: var(--accent) !important; box-shadow: 0 0 15px var(--accent-glow) !important; }
+.card { border: 1px solid var(--accent-border) !important; }
+
+/* ── Theme unlock celebration ── */
+#themeUnlockModal {
+    position: fixed; inset: 0; z-index: 30000;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
 }
-.form-control:focus {
-    border-color: var(--accent) !important;
-    box-shadow: 0 0 15px var(--accent-glow) !important;
+#themeUnlockModal.show { opacity: 1; pointer-events: auto; }
+.unlock-card {
+    background: rgba(10,14,28,0.99);
+    border: 1px solid var(--accent-border);
+    border-radius: 24px; padding: 40px 48px;
+    text-align: center; max-width: 380px;
+    transform: scale(0.8);
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 80px var(--accent-glow);
 }
-.card {
-    border: 1px solid var(--accent-border) !important;
+#themeUnlockModal.show .unlock-card { transform: scale(1); }
+.unlock-icon { font-size: 56px; margin-bottom: 16px; display: block; animation: bounce-in 0.6s ease; }
+@keyframes bounce-in { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+.unlock-title { font-size: 22px; font-weight: 900; color: #ffffff !important; margin-bottom: 6px; }
+.unlock-sub   { font-size: 14px; color: #64748b !important; margin-bottom: 24px; }
+.unlock-apply-btn {
+    background: var(--grad-btn); border: none; border-radius: 12px;
+    color: #fff !important; font-weight: 700; font-size: 15px;
+    padding: 12px 32px; cursor: pointer; width: 100%;
+    transition: opacity 0.2s, transform 0.2s;
+}
+.unlock-apply-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.unlock-later-btn {
+    background: transparent; border: none; color: #475569 !important;
+    font-size: 13px; cursor: pointer; margin-top: 10px; width: 100%;
+}
+
+/* Confetti particle */
+.confetti-piece {
+    position: fixed; width: 8px; height: 8px; border-radius: 2px;
+    pointer-events: none; z-index: 29999;
+    animation: confetti-fall 1.8s ease-in forwards;
+}
+@keyframes confetti-fall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -227,6 +422,17 @@ body > *:not(canvas) { position:relative; z-index:2; }
     <div>
         <div class="toast-title" id="toastTitle">Theme Applied!</div>
         <div class="toast-sub"   id="toastSub">Your new theme is active.</div>
+    </div>
+</div>
+
+<!-- Theme unlock celebration modal -->
+<div id="themeUnlockModal">
+    <div class="unlock-card">
+        <span class="unlock-icon" id="unlockIcon">🎨</span>
+        <div class="unlock-title" id="unlockTitle">Theme Unlocked!</div>
+        <div class="unlock-sub"   id="unlockSub">A new visual experience is ready.</div>
+        <button class="unlock-apply-btn" id="unlockApplyBtn">Apply Theme Now</button>
+        <button class="unlock-later-btn" onclick="closeUnlockModal()">Maybe later</button>
     </div>
 </div>
 
@@ -542,12 +748,60 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* ── Check for newly unlocked themes ── */
+var _pendingUnlockTheme = null;
+
+function fireConfetti(accentColor) {
+    var colors = [accentColor, "#ffffff", "#ffd60a", accentColor];
+    for (var i = 0; i < 60; i++) {
+        (function(i) {
+            setTimeout(function() {
+                var el = document.createElement("div");
+                el.className = "confetti-piece";
+                el.style.left = Math.random() * 100 + "vw";
+                el.style.top  = "-10px";
+                el.style.background = colors[Math.floor(Math.random() * colors.length)];
+                el.style.animationDuration = (1.2 + Math.random() * 0.8) + "s";
+                el.style.animationDelay = (Math.random() * 0.4) + "s";
+                el.style.transform = "rotate(" + (Math.random() * 360) + "deg)";
+                document.body.appendChild(el);
+                setTimeout(function() { el.remove(); }, 2500);
+            }, i * 20);
+        })(i);
+    }
+}
+
+function showUnlockModal(theme) {
+    _pendingUnlockTheme = theme;
+    document.getElementById("unlockIcon").textContent  = theme.icon;
+    document.getElementById("unlockTitle").textContent = "🎉 " + theme.name + " Unlocked!";
+    document.getElementById("unlockSub").textContent   = "You earned enough XP to unlock this theme. Apply it now?";
+    var applyBtn = document.getElementById("unlockApplyBtn");
+    applyBtn.style.background = theme.accent;
+    applyBtn.onclick = function() {
+        selectTheme(theme.id);
+        closeUnlockModal();
+    };
+    document.getElementById("themeUnlockModal").classList.add("show");
+    fireConfetti(theme.accent);
+}
+
+function closeUnlockModal() {
+    document.getElementById("themeUnlockModal").classList.remove("show");
+    _pendingUnlockTheme = null;
+}
+
 function checkThemeUnlocks(oldXP, newXP) {
+    var justUnlocked = [];
     THEMES.forEach(function (t) {
         if (t.xp_required > 0 && oldXP < t.xp_required && newXP >= t.xp_required) {
-            showToast(t.icon, "🎉 Theme Unlocked: " + t.name, "Open Theme Studio in the nav to apply it.", t.accent);
+            justUnlocked.push(t);
         }
     });
+    if (justUnlocked.length > 0) {
+        /* Show modal for the highest-tier unlock */
+        var top = justUnlocked[justUnlocked.length - 1];
+        setTimeout(function() { showUnlockModal(top); }, 500);
+    }
 }
 
 /* ── Called by dashboard to sync XP ── */
