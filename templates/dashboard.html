@@ -572,4 +572,12 @@
     }
 }());
 </script>
+<script>
+/* Sync total XP into localStorage so the theme system can check unlocks */
+(function () {
+    var totalXP = 0;
+    {% for dc in domain_cards %}totalXP += {{ dc.xp }};{% endfor %}
+    if (window.syncTotalXP) { window.syncTotalXP(totalXP); }
+}());
+</script>
 {% endblock %}

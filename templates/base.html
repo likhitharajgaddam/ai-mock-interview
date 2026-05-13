@@ -6,6 +6,525 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 
+/* ═══════════════════════════════════════════════════════════════
+   THEME SYSTEM — CSS custom properties on :root
+   Default theme values. Overridden by data-theme attribute on <body>.
+═══════════════════════════════════════════════════════════════ */
+:root {
+    --accent:        #7c3aed;
+    --accent2:       #4f46e5;
+    --accent-glow:   rgba(124,58,237,0.4);
+    --accent-soft:   rgba(124,58,237,0.12);
+    --accent-border: rgba(124,58,237,0.25);
+    --bg-primary:    #0f172a;
+    --bg-secondary:  #020617;
+    --bg-card:       rgba(13,18,36,0.97);
+    --particle-col:  #7c3aed;
+    --sphere-col:    0x7c3aed;
+    --grad-btn:      linear-gradient(90deg,#4f46e5,#7c3aed);
+    --grad-body:     linear-gradient(135deg,#0f172a,#020617);
+}
+
+/* ── Neon Purple ── */
+body[data-theme="neon"] {
+    --accent:        #d946ef;
+    --accent2:       #a21caf;
+    --accent-glow:   rgba(217,70,239,0.5);
+    --accent-soft:   rgba(217,70,239,0.1);
+    --accent-border: rgba(217,70,239,0.3);
+    --bg-primary:    #0d0014;
+    --bg-secondary:  #1a0028;
+    --bg-card:       rgba(20,0,35,0.97);
+    --particle-col:  #d946ef;
+    --grad-btn:      linear-gradient(90deg,#a21caf,#d946ef);
+    --grad-body:     linear-gradient(135deg,#0d0014,#1a0028);
+}
+
+/* ── Matrix Hacker ── */
+body[data-theme="matrix"] {
+    --accent:        #00ff41;
+    --accent2:       #00cc33;
+    --accent-glow:   rgba(0,255,65,0.4);
+    --accent-soft:   rgba(0,255,65,0.08);
+    --accent-border: rgba(0,255,65,0.25);
+    --bg-primary:    #000a00;
+    --bg-secondary:  #001400;
+    --bg-card:       rgba(0,12,0,0.97);
+    --particle-col:  #00ff41;
+    --grad-btn:      linear-gradient(90deg,#00cc33,#00ff41);
+    --grad-body:     linear-gradient(135deg,#000a00,#001400);
+}
+
+/* ── Synthwave ── */
+body[data-theme="synthwave"] {
+    --accent:        #f72585;
+    --accent2:       #7209b7;
+    --accent-glow:   rgba(247,37,133,0.5);
+    --accent-soft:   rgba(247,37,133,0.1);
+    --accent-border: rgba(247,37,133,0.3);
+    --bg-primary:    #10002b;
+    --bg-secondary:  #240046;
+    --bg-card:       rgba(16,0,43,0.97);
+    --particle-col:  #f72585;
+    --grad-btn:      linear-gradient(90deg,#7209b7,#f72585);
+    --grad-body:     linear-gradient(135deg,#10002b,#240046);
+}
+
+/* ── Jarvis AI ── */
+body[data-theme="jarvis"] {
+    --accent:        #00d4ff;
+    --accent2:       #0066cc;
+    --accent-glow:   rgba(0,212,255,0.4);
+    --accent-soft:   rgba(0,212,255,0.08);
+    --accent-border: rgba(0,212,255,0.25);
+    --bg-primary:    #000d1a;
+    --bg-secondary:  #001a33;
+    --bg-card:       rgba(0,10,20,0.97);
+    --particle-col:  #00d4ff;
+    --grad-btn:      linear-gradient(90deg,#0066cc,#00d4ff);
+    --grad-body:     linear-gradient(135deg,#000d1a,#001a33);
+}
+
+/* ── Cyberpunk ── */
+body[data-theme="cyberpunk"] {
+    --accent:        #ffd60a;
+    --accent2:       #ff6b35;
+    --accent-glow:   rgba(255,214,10,0.4);
+    --accent-soft:   rgba(255,214,10,0.08);
+    --accent-border: rgba(255,214,10,0.3);
+    --bg-primary:    #0a0a0f;
+    --bg-secondary:  #1a0a00;
+    --bg-card:       rgba(10,8,0,0.97);
+    --particle-col:  #ffd60a;
+    --grad-btn:      linear-gradient(90deg,#ff6b35,#ffd60a);
+    --grad-body:     linear-gradient(135deg,#0a0a0f,#1a0a00);
+}
+
+/* ── Apply theme vars to elements ── */
+html, body {
+    background: var(--grad-body) !important;
+}
+.form-control:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 15px var(--accent-glow) !important;
+}
+.card {
+    border: 1px solid var(--accent-border) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE STYLES
+═══════════════════════════════════════════════════════════════ */
+body { color: #f8fafc; }
+h1,h2,h3,h4,h5,h6 { color: #ffffff !important; }
+p, .text-muted { color: #cbd5e1 !important; }
+.card { background: rgba(15,23,42,0.95) !important; }
+.card h5, .card p { color: #e2e8f0 !important; }
+.form-control {
+    background: rgba(30,41,59,0.9) !important;
+    border: 1px solid var(--accent-border) !important;
+    color: #e2e8f0 !important; transition: 0.3s ease;
+}
+.form-control:focus { background: rgba(30,41,59,1) !important; color: #ffffff !important; }
+input:-webkit-autofill, input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px rgba(30,41,59,1) inset !important;
+    -webkit-text-fill-color: #e2e8f0 !important;
+}
+body { font-family: 'Inter', sans-serif; }
+.stat-card { transition: all 0.3s ease; }
+.stat-card:hover { transform: translateY(-6px); box-shadow: 0 12px 25px rgba(0,0,0,0.15); }
+.performance-card { background: linear-gradient(135deg,#4f46e5,#7c3aed); color: white; }
+html, body { margin:0; padding:0; height:100%; overflow-x:hidden; color:white; }
+.hero { position:relative; display:flex; justify-content:center; align-items:center; }
+.title { font-size:4rem; font-weight:800; background:linear-gradient(90deg,#00f5ff,#7c3aed); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.typing-text { margin-top:20px; font-size:1.5rem; color:#94a3b8; }
+.btn-glow { margin-top:30px; background:linear-gradient(45deg,#7c3aed,#00d4ff); border:none; padding:15px 40px; border-radius:50px; font-weight:600; color:white !important; text-decoration:none !important; display:inline-block; transition:0.3s; box-shadow:0 0 20px rgba(124,58,237,0.4); }
+.btn-glow:hover { transform:translateY(-4px); box-shadow:0 15px 40px rgba(124,58,237,0.6); }
+.hero-container { display:flex; align-items:center; justify-content:space-around; padding:0 10%; }
+.left-visual { width:40%; }
+.right-content { width:50%; }
+.glass-card { background:rgba(15,23,42,0.92); backdrop-filter:blur(8px); border-radius:20px; padding:30px; border:1px solid var(--accent-border); box-shadow:0 0 40px var(--accent-soft),inset 0 0 20px rgba(0,0,0,0.6); }
+.floating { animation:float 6s ease-in-out infinite; }
+.terminal { background:linear-gradient(180deg,#000 0%,#0a0a0a 100%); padding:18px; border-radius:14px; font-family:monospace; font-size:14px; color:#00ff9d; box-shadow:0 0 25px rgba(0,255,157,0.25),inset 0 0 20px rgba(0,0,0,0.9); position:relative; z-index:2; }
+.type-line { opacity:0; animation:typing 2s forwards; }
+.type-line:nth-child(1) { animation-delay:0.5s; }
+.type-line:nth-child(2) { animation-delay:2s; }
+.type-line:nth-child(3) { animation-delay:3.5s; }
+@keyframes typing { to { opacity:1; } }
+@keyframes float { 0%{transform:translateY(0)} 50%{transform:translateY(-15px)} 100%{transform:translateY(0)} }
+.brand-gradient { font-weight:700; font-size:1.3rem; background:white; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:1px; }
+.nav-btn { padding:6px 18px; border-radius:30px; border:1px solid var(--accent-border); color:#cbd5e1; text-decoration:none; transition:0.3s; }
+.nav-btn:hover { background:var(--grad-btn); color:white; box-shadow:0 0 15px var(--accent-glow); }
+.feature-card { background:rgba(30,41,59,0.9); border:1px solid var(--accent-border); border-radius:16px; padding:25px; transition:0.3s ease; }
+.feature-card:hover { transform:translateY(-6px); box-shadow:0 0 25px var(--accent-glow); }
+body > *:not(canvas) { position:relative; z-index:2; }
+
+/* ── Theme switcher button in nav ── */
+.theme-btn {
+    background: transparent;
+    border: 1px solid var(--accent-border);
+    border-radius: 20px; padding: 5px 12px;
+    color: #cbd5e1 !important; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: 0.2s; margin-right: 8px;
+}
+.theme-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+/* ── Theme panel overlay ── */
+#themePanelOverlay {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+}
+#themePanel {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 340px;
+    background: rgba(10,14,28,0.99); border-left: 1px solid var(--accent-border);
+    z-index: 10001; padding: 28px 24px; overflow-y: auto;
+    transform: translateX(100%); transition: transform 0.3s ease;
+}
+#themePanel.open { transform: translateX(0); }
+.tp-title { font-size: 14px; font-weight: 800; color: #ffffff !important; margin-bottom: 4px; }
+.tp-sub   { font-size: 12px; color: #475569 !important; margin-bottom: 24px; }
+.tp-section { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; color: #6366f1 !important; margin-bottom: 12px; margin-top: 20px; }
+
+/* Theme card */
+.theme-card {
+    border-radius: 12px; padding: 14px; margin-bottom: 10px;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.theme-card:hover { transform: translateY(-2px); }
+.theme-card.active { border-color: var(--accent) !important; box-shadow: 0 0 16px var(--accent-glow); }
+.theme-card.locked { cursor: not-allowed; opacity: 0.55; }
+.tc-name { font-size: 13px; font-weight: 700; color: #ffffff !important; margin-bottom: 2px; }
+.tc-desc { font-size: 11px; color: #64748b !important; }
+.tc-lock { position: absolute; top: 10px; right: 10px; font-size: 14px; }
+.tc-xp   { font-size: 10px; font-weight: 700; margin-top: 6px; }
+.tc-progress { height: 3px; border-radius: 3px; background: rgba(255,255,255,0.1); margin-top: 8px; overflow: hidden; }
+.tc-progress-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+/* XP unlock toast */
+#xpToast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 20000;
+    background: rgba(10,14,28,0.98); border: 1px solid var(--accent-border);
+    border-radius: 14px; padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    transform: translateY(80px); opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+    pointer-events: none; min-width: 240px;
+}
+#xpToast.show { transform: translateY(0); opacity: 1; }
+.toast-ico { font-size: 22px; }
+.toast-title { font-size: 13px; font-weight: 700; color: #ffffff !important; }
+.toast-sub   { font-size: 11px; color: #64748b !important; }
+</style>
+</head>
+
+<body>
+
+<!-- XP Toast notification -->
+<div id="xpToast">
+    <div class="toast-ico" id="toastIco">🎨</div>
+    <div>
+        <div class="toast-title" id="toastTitle">Theme Unlocked!</div>
+        <div class="toast-sub"   id="toastSub">You can now apply it from the theme panel.</div>
+    </div>
+</div>
+
+<!-- Theme panel overlay -->
+<div id="themePanelOverlay" onclick="closeThemePanel()"></div>
+
+<!-- Theme panel -->
+<div id="themePanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div class="tp-title">🎨 Theme Studio</div>
+        <button onclick="closeThemePanel()" style="background:transparent;border:none;color:#64748b;font-size:18px;cursor:pointer;padding:0;">✕</button>
+    </div>
+    <div class="tp-sub">Unlock themes by earning XP through quality answers.</div>
+
+    <div class="tp-section">UNLOCKED THEMES</div>
+    <div id="unlockedThemes"></div>
+
+    <div class="tp-section">LOCKED THEMES</div>
+    <div id="lockedThemes"></div>
+</div>
+
+<nav class="navbar navbar-expand-lg px-4 premium-nav"
+     style="background: rgba(15,23,42,0.9); backdrop-filter: blur(10px);">
+    <div class="container-fluid">
+        <a class="navbar-brand brand-gradient" href="{% url 'home' %}">
+            AI Mock Interview
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+
+            {% if user.is_authenticated %}
+                <button class="theme-btn" onclick="openThemePanel()">🎨 Themes</button>
+
+                {% if request.path != '/interview/' %}
+                    {% if request.resolver_match.url_name != 'select_role' %}
+                    <a href="{% url 'select_role' %}" class="btn btn-outline-light me-2">Interview Roles</a>
+                    {% endif %}
+                {% endif %}
+
+                {% if request.resolver_match.url_name != 'dashboard' %}
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-light me-2">Dashboard</a>
+                {% endif %}
+
+                <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            {% else %}
+                {% if request.resolver_match.url_name != 'home' %}
+                <a href="{% url 'home' %}" class="nav-btn me-2">Home</a>
+                {% endif %}
+                {% if request.resolver_match.url_name != 'about' %}
+                <a href="{% url 'about' %}" class="nav-btn">About</a>
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5 position-relative" style="z-index: 5;">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<script>
+tsParticles.load("particles", {
+    background: { color: "transparent" },
+    particles: {
+        number: { value: 60 },
+        color: { value: "#7c3aed" },
+        links: { enable: true, color: "#4f46e5", distance: 150 },
+        move: { enable: true, speed: 1 },
+        size: { value: 3 }
+    }
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const scene    = new THREE.Scene();
+const camera   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.domElement.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;";
+document.body.appendChild(renderer.domElement);
+const geometry = new THREE.IcosahedronGeometry(2, 1);
+const material = new THREE.MeshBasicMaterial({ color: 0x7c3aed, wireframe: true, transparent: true, opacity: 0.25 });
+const sphere   = new THREE.Mesh(geometry, material);
+scene.add(sphere);
+camera.position.z = 5;
+function animate() { requestAnimationFrame(animate); sphere.rotation.x += 0.002; sphere.rotation.y += 0.003; renderer.render(scene, camera); }
+animate();
+</script>
+
+<script>
+(function () {
+    /* ── Parallax (home page only) ── */
+    const glassCard = document.querySelector(".glass-card");
+    if (glassCard) {
+        document.addEventListener("mousemove", function (e) {
+            const x = (window.innerWidth/2  - e.pageX) / 100;
+            const y = (window.innerHeight/2 - e.pageY) / 100;
+            glassCard.style.transform = "translate(" + x + "px, " + y + "px)";
+        });
+    }
+    if (typeof renderer !== "undefined" && renderer) {
+        window.addEventListener("resize", function () {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    }
+}());
+
+/* ══════════════════════════════════════════════════════════════
+   THEME SYSTEM
+   - Themes defined with XP thresholds
+   - Unlocked status stored in localStorage
+   - Active theme stored in localStorage and applied on load
+══════════════════════════════════════════════════════════════ */
+var THEMES = [
+    {
+        id: "default",
+        name: "Default",
+        desc: "The classic dark purple AI aesthetic.",
+        icon: "🌌",
+        xp_required: 0,
+        preview: "linear-gradient(135deg,#0f172a,#020617)",
+        accent: "#7c3aed"
+    },
+    {
+        id: "neon",
+        name: "Neon Purple",
+        desc: "Electric magenta glow. Unlock at 100 XP.",
+        icon: "💜",
+        xp_required: 100,
+        preview: "linear-gradient(135deg,#0d0014,#1a0028)",
+        accent: "#d946ef"
+    },
+    {
+        id: "matrix",
+        name: "Matrix Hacker",
+        desc: "Green terminal aesthetic. Unlock at 250 XP.",
+        icon: "💚",
+        xp_required: 250,
+        preview: "linear-gradient(135deg,#000a00,#001400)",
+        accent: "#00ff41"
+    },
+    {
+        id: "synthwave",
+        name: "Synthwave",
+        desc: "Retro pink and purple. Unlock at 500 XP.",
+        icon: "🌸",
+        xp_required: 500,
+        preview: "linear-gradient(135deg,#10002b,#240046)",
+        accent: "#f72585"
+    },
+    {
+        id: "jarvis",
+        name: "Jarvis AI",
+        desc: "Iron Man blue intelligence. Unlock at 800 XP.",
+        icon: "🔵",
+        xp_required: 800,
+        preview: "linear-gradient(135deg,#000d1a,#001a33)",
+        accent: "#00d4ff"
+    },
+    {
+        id: "cyberpunk",
+        name: "Cyberpunk",
+        desc: "Neon yellow and orange. Unlock at 1200 XP.",
+        icon: "⚡",
+        xp_required: 1200,
+        preview: "linear-gradient(135deg,#0a0a0f,#1a0a00)",
+        accent: "#ffd60a"
+    }
+];
+
+/* Get total XP from localStorage (set by dashboard page) */
+function getTotalXP() {
+    return parseInt(localStorage.getItem("ai_mock_total_xp") || "0", 10);
+}
+
+function getActiveTheme() {
+    return localStorage.getItem("ai_mock_theme") || "default";
+}
+
+function setActiveTheme(id) {
+    localStorage.setItem("ai_mock_theme", id);
+    applyTheme(id);
+    renderThemePanel();
+}
+
+function applyTheme(id) {
+    document.body.setAttribute("data-theme", id === "default" ? "" : id);
+}
+
+/* Apply saved theme immediately on load */
+(function () {
+    var saved = getActiveTheme();
+    if (saved && saved !== "default") {
+        applyTheme(saved);
+    }
+}());
+
+function openThemePanel() {
+    renderThemePanel();
+    document.getElementById("themePanelOverlay").style.display = "block";
+    setTimeout(function () { document.getElementById("themePanel").classList.add("open"); }, 10);
+}
+
+function closeThemePanel() {
+    document.getElementById("themePanel").classList.remove("open");
+    setTimeout(function () { document.getElementById("themePanelOverlay").style.display = "none"; }, 300);
+}
+
+function renderThemePanel() {
+    var totalXP   = getTotalXP();
+    var active    = getActiveTheme();
+    var unlocked  = document.getElementById("unlockedThemes");
+    var locked    = document.getElementById("lockedThemes");
+    unlocked.innerHTML = "";
+    locked.innerHTML   = "";
+
+    THEMES.forEach(function (t) {
+        var isUnlocked = totalXP >= t.xp_required;
+        var isActive   = active === t.id;
+        var pct        = t.xp_required === 0 ? 100 : Math.min(100, Math.round((totalXP / t.xp_required) * 100));
+
+        var card = document.createElement("div");
+        card.className = "theme-card" + (isActive ? " active" : "") + (isUnlocked ? "" : " locked");
+        card.style.background = t.preview;
+
+        if (isUnlocked) {
+            card.onclick = function () { setActiveTheme(t.id); };
+            card.innerHTML =
+                '<div style="display:flex;align-items:center;gap:8px;">' +
+                    '<span style="font-size:18px;">' + t.icon + '</span>' +
+                    '<div>' +
+                        '<div class="tc-name">' + t.name + (isActive ? ' <span style="font-size:10px;color:' + t.accent + '">● ACTIVE</span>' : '') + '</div>' +
+                        '<div class="tc-desc">' + t.desc + '</div>' +
+                    '</div>' +
+                '</div>';
+            unlocked.appendChild(card);
+        } else {
+            card.innerHTML =
+                '<div class="tc-lock">🔒</div>' +
+                '<div style="display:flex;align-items:center;gap:8px;">' +
+                    '<span style="font-size:18px;opacity:0.5;">' + t.icon + '</span>' +
+                    '<div>' +
+                        '<div class="tc-name" style="opacity:0.6;">' + t.name + '</div>' +
+                        '<div class="tc-desc">' + t.desc + '</div>' +
+                        '<div class="tc-xp" style="color:' + t.accent + ';">' + t.xp_required + ' XP required · You have ' + totalXP + ' XP</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="tc-progress"><div class="tc-progress-fill" style="width:' + pct + '%;background:' + t.accent + ';"></div></div>';
+            locked.appendChild(card);
+        }
+    });
+
+    if (unlocked.children.length === 0) {
+        unlocked.innerHTML = '<div style="font-size:12px;color:#475569;padding:8px 0;">No themes unlocked yet. Earn XP by answering well.</div>';
+    }
+    if (locked.children.length === 0) {
+        locked.innerHTML = '<div style="font-size:12px;color:#475569;padding:8px 0;">All themes unlocked! 🎉</div>';
+    }
+}
+
+/* Show XP toast */
+function showToast(ico, title, sub) {
+    var t = document.getElementById("xpToast");
+    document.getElementById("toastIco").textContent   = ico;
+    document.getElementById("toastTitle").textContent = title;
+    document.getElementById("toastSub").textContent   = sub;
+    t.classList.add("show");
+    setTimeout(function () { t.classList.remove("show"); }, 3500);
+}
+
+/* Check for newly unlocked themes after XP update */
+function checkThemeUnlocks(oldXP, newXP) {
+    THEMES.forEach(function (t) {
+        if (t.xp_required > 0 && oldXP < t.xp_required && newXP >= t.xp_required) {
+            showToast(t.icon, "Theme Unlocked: " + t.name, "Open Theme Studio from the nav to apply it.");
+        }
+    });
+}
+
+/* Called by dashboard page to sync total XP into localStorage */
+window.syncTotalXP = function (xp) {
+    var old = getTotalXP();
+    localStorage.setItem("ai_mock_total_xp", xp);
+    if (xp > old) { checkThemeUnlocks(old, xp); }
+};
+</script>
+</body>
+</html>
+
 
 
     /* Make all text white on dark theme pages */
