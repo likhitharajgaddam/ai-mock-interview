@@ -463,22 +463,30 @@ body > *:not(canvas) { position:relative; z-index:2; }
         <div class="ms-auto d-flex align-items-center">
 
             {% if user.is_authenticated %}
-                <button class="theme-btn" onclick="openThemePanel()">🎨 Themes</button>
+                <button class="theme-btn" onclick="openThemePanel()">🎨</button>
 
-                {% if request.path != '/interview/' %}
+                {% if request.resolver_match.url_name == 'start_interview' %}
+                    <!-- INTERVIEW MODE: only show quit button -->
+                    <button onclick="showQuitModal()" style="
+                        background:transparent; border:1px solid rgba(239,68,68,0.4);
+                        border-radius:20px; padding:5px 14px; color:#fca5a5 !important;
+                        font-size:12px; font-weight:700; cursor:pointer; transition:0.2s;
+                        letter-spacing:0.3px;">
+                        ✕ Quit Interview
+                    </button>
+                {% else %}
                     {% if request.resolver_match.url_name != 'select_role' %}
                     <a href="{% url 'select_role' %}" class="btn btn-outline-light me-2">Interview Roles</a>
                     {% endif %}
+                    {% if request.resolver_match.url_name != 'dashboard' %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-light me-2">Dashboard</a>
+                    {% endif %}
+                    <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Logout</button>
+                    </form>
                 {% endif %}
 
-                {% if request.resolver_match.url_name != 'dashboard' %}
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-light me-2">Dashboard</a>
-                {% endif %}
-
-                <form method="POST" action="{% url 'logout' %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Logout</button>
-                </form>
             {% else %}
                 {% if request.resolver_match.url_name != 'home' %}
                 <a href="{% url 'home' %}" class="nav-btn me-2">Home</a>
@@ -810,6 +818,16 @@ window.syncTotalXP = function (xp) {
     localStorage.setItem("ai_mock_total_xp", xp);
     if (xp > old) { checkThemeUnlocks(old, xp); }
 };
+
+/* ── Quit interview modal ── */
+function showQuitModal() {
+    var m = document.getElementById("quitModal");
+    if (m) { m.style.display = "flex"; setTimeout(function(){ m.style.opacity = "1"; }, 10); }
+}
+function hideQuitModal() {
+    var m = document.getElementById("quitModal");
+    if (m) { m.style.opacity = "0"; setTimeout(function(){ m.style.display = "none"; }, 300); }
+}
 </script>
 </body>
 </html>

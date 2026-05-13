@@ -1,5 +1,80 @@
 {% extends 'base.html' %}
 {% block content %}
+
+<!-- ── Quit confirmation modal ── -->
+<div id="quitModal" style="
+    display:none; opacity:0; position:fixed; inset:0; z-index:25000;
+    background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);
+    align-items:center; justify-content:center;
+    transition:opacity 0.3s;">
+    <div style="
+        background:rgba(10,14,28,0.99); border:1px solid rgba(239,68,68,0.3);
+        border-radius:20px; padding:36px 40px; max-width:380px; width:90%;
+        text-align:center; box-shadow:0 0 60px rgba(239,68,68,0.15);">
+        <div style="font-size:36px;margin-bottom:14px;">⚠️</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;">Quit Interview?</div>
+        <div style="font-size:13px;color:#64748b;margin-bottom:28px;line-height:1.6;">
+            Your progress for this round will be lost.<br>
+            Question {{ question_number }} of {{ max_questions }} answered so far.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <button onclick="hideQuitModal()" style="
+                background:linear-gradient(90deg,#4f46e5,#7c3aed);
+                border:none; border-radius:12px; color:#fff;
+                font-weight:700; font-size:14px; padding:13px;
+                cursor:pointer; transition:opacity 0.2s;">
+                Continue Interview
+            </button>
+            <a href="{% url 'select_role' %}" style="
+                background:transparent; border:1px solid rgba(239,68,68,0.4);
+                border-radius:12px; color:#fca5a5 !important;
+                font-weight:600; font-size:14px; padding:13px;
+                text-decoration:none; display:block;
+                transition:background 0.2s;">
+                Quit &amp; Return to Roles
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── Cinematic start overlay (shown only on Q1) ── -->
+{% if question_number == 1 and last_score < 0 %}
+<div id="cinematicStart" style="
+    position:fixed; inset:0; z-index:20000;
+    background:rgba(5,8,20,0.97); backdrop-filter:blur(12px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; transition:opacity 0.6s;">
+    <div style="font-size:52px;animation:bounce-in 0.6s ease;">🤖</div>
+    <div style="font-size:22px;font-weight:900;color:#a78bfa;letter-spacing:1px;" id="cinematicText">
+        Connecting to AI Interviewer…
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+        <div style="width:8px;height:8px;background:#7c3aed;border-radius:50%;animation:dp 1.2s infinite ease-in-out;"></div>
+        <div style="width:8px;height:8px;background:#7c3aed;border-radius:50%;animation:dp 1.2s 0.2s infinite ease-in-out;"></div>
+        <div style="width:8px;height:8px;background:#7c3aed;border-radius:50%;animation:dp 1.2s 0.4s infinite ease-in-out;"></div>
+    </div>
+    <div style="font-size:12px;color:#334155;margin-top:8px;">{{ role.name }} · Technical Round</div>
+</div>
+<script>
+(function () {
+    var overlay = document.getElementById("cinematicStart");
+    var txt     = document.getElementById("cinematicText");
+    if (!overlay) return;
+    var steps = [
+        { t: 0,    msg: "Connecting to AI Interviewer…" },
+        { t: 900,  msg: "Loading your question set…" },
+        { t: 1800, msg: "Interview session started." },
+    ];
+    steps.forEach(function(s) {
+        setTimeout(function() { if (txt) txt.textContent = s.msg; }, s.t);
+    });
+    setTimeout(function() {
+        overlay.style.opacity = "0";
+        setTimeout(function() { overlay.style.display = "none"; }, 600);
+    }, 2600);
+}());
+</script>
+{% endif %}
 <style>
 /* ─── Layout ──────────────────────────────────────────────────── */
 .iw { max-width: 760px; width: 100%; margin: 0 auto; }
