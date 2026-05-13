@@ -2,179 +2,181 @@
 {% block content %}
 
 <style>
-
-/* ===============================
-   RESULT CARD STYLING
-================================ */
-
 .result-card {
-    max-width: 750px;
+    max-width: 800px;
     width: 100%;
     background: rgba(15, 23, 42, 0.95);
     border: 1px solid rgba(124,58,237,0.25);
     border-radius: 16px;
-    padding: 30px;
+    padding: 32px;
+    color: #ffffff;
+}
+.result-card h1,.result-card h2,.result-card h3,
+.result-card h4,.result-card h5,.result-card h6,
+.result-card p,.result-card span,.result-card small,
+.result-card strong,.result-card li {
     color: #ffffff !important;
 }
-
-/* Make all text white */
-.result-card h1,
-.result-card h2,
-.result-card h3,
-.result-card h4,
-.result-card h5,
-.result-card h6,
-.result-card p,
-.result-card span,
-.result-card small,
-.result-card strong {
-    color: #ffffff !important;
+.answer-card {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
 }
-
-/* Score badge */
-.score-badge {
+.score-pill {
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
-    padding: 5px 12px;
+    padding: 4px 14px;
     border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-block;
 }
-
-/* ===============================
-   BUTTONS
-================================ */
-
-/* Primary Button */
-.result-primary-btn {
+.btn-retake {
     background: linear-gradient(90deg,#4f46e5,#7c3aed);
     border: none;
-    color: white !important;
+    color: #fff !important;
     border-radius: 10px;
-    padding: 12px;
+    padding: 13px 20px;
     font-weight: 600;
-    transition: 0.3s ease;
+    transition: 0.3s;
+    text-decoration: none;
+    display: block;
+    text-align: center;
 }
-
-.result-primary-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-}
-
-/* Secondary Button */
-.result-secondary-btn {
+.btn-retake:hover { opacity: 0.88; transform: translateY(-2px); }
+.btn-outline-purple {
     background: transparent;
     border: 1px solid rgba(124,58,237,0.5);
     color: #ffffff !important;
     border-radius: 10px;
-    padding: 12px;
+    padding: 13px 20px;
     font-weight: 600;
-    transition: 0.3s ease;
+    transition: 0.3s;
+    text-decoration: none;
+    display: block;
+    text-align: center;
 }
-
-.result-secondary-btn:hover {
+.btn-outline-purple:hover {
     background: rgba(124,58,237,0.2);
     border-color: #7c3aed;
 }
-
+.tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 2px;
+}
+.tag-green  { background: rgba(16,185,129,0.2); color: #6ee7b7 !important; border: 1px solid rgba(16,185,129,0.3); }
+.tag-red    { background: rgba(239,68,68,0.2);  color: #fca5a5 !important; border: 1px solid rgba(239,68,68,0.3); }
+.tag-blue   { background: rgba(59,130,246,0.2); color: #93c5fd !important; border: 1px solid rgba(59,130,246,0.3); }
 </style>
 
 <div class="d-flex justify-content-center">
-    <div class="result-card shadow-lg">
+<div class="result-card shadow-lg">
 
-        <!-- Title -->
-        <div class="text-center mb-4">
-            <h2 class="fw-bold mb-2">Interview Completed</h2>
-            <p class="text-muted mb-0">
-                {{ role.name }} Assessment Result
-            </p>
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1">Interview Complete</h2>
+        <p style="color:#94a3b8 !important;">{{ role.name }} Assessment</p>
+    </div>
+
+    <!-- Score -->
+    <div class="text-center mb-3">
+        <p style="color:#94a3b8 !important; margin-bottom:4px;">Overall Score</p>
+        <h1 class="fw-bold display-4 mb-2">{{ percentage }}%</h1>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress mb-4" style="height:10px;border-radius:8px;background:rgba(30,41,59,0.8);">
+        <div class="progress-bar" role="progressbar"
+             style="width:{{ percentage }}%;background:linear-gradient(90deg,#4f46e5,#7c3aed);">
+        </div>
+    </div>
+
+    <!-- Level badge -->
+    <div class="text-center mb-4">
+        {% if percentage >= 80 %}
+            <span class="badge bg-success px-4 py-2 fs-6">Advanced Level</span>
+        {% elif percentage >= 60 %}
+            <span class="badge bg-warning text-dark px-4 py-2 fs-6">Intermediate Level</span>
+        {% else %}
+            <span class="badge bg-danger px-4 py-2 fs-6">Beginner Level</span>
+        {% endif %}
+    </div>
+
+    <hr style="border-color:rgba(124,58,237,0.2);">
+
+    <!-- Detailed review -->
+    <h4 class="fw-bold mb-3">Detailed Review</h4>
+
+    {% for ans in answers %}
+    <div class="answer-card">
+
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="fw-bold mb-0" style="color:#a78bfa !important;">
+                Q{{ forloop.counter }}.
+            </h6>
+            <span class="score-pill">{{ ans.score }}/10</span>
         </div>
 
-        <!-- Score Section -->
-        <div class="text-center mb-4">
-            <h5 class="text-muted">Total Score</h5>
-            <h1 class="fw-bold display-5 mb-2">
-                {{ percentage }}%
-            </h1>
+        <p class="mb-2" style="font-size:15px;">{{ ans.question_text }}</p>
+
+        <div class="mb-2" style="background:rgba(15,23,42,0.6);border-radius:8px;padding:10px;">
+            <small style="color:#64748b !important;">Your answer:</small>
+            <p class="mb-0" style="font-size:14px;color:#cbd5e1 !important;">{{ ans.response }}</p>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="progress mb-4" style="height:12px; border-radius:10px;">
-            <div class="progress-bar"
-                 role="progressbar"
-                 style="width: {{ percentage }}%; background: linear-gradient(90deg,#4f46e5,#7c3aed);">
-            </div>
+        {% if ans.feedback %}
+        <div>
+            <small style="color:#64748b !important;">AI Feedback:</small>
+            <p class="mb-0" style="font-size:14px;color:#e2e8f0 !important;">{{ ans.feedback }}</p>
         </div>
+        {% endif %}
 
-        <!-- Performance Badge -->
-        <div class="text-center mb-4">
+    </div>
+    {% endfor %}
+
+    <!-- Summary -->
+    <div class="mb-4 mt-2" style="background:rgba(79,70,229,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:12px;padding:18px;">
+        <h5 class="fw-semibold mb-2">Performance Summary</h5>
+        <p style="color:#cbd5e1 !important; margin-bottom:0;">
             {% if percentage >= 80 %}
-                <span class="badge bg-success px-4 py-2 fs-6">
-                    Advanced Level
-                </span>
+                Strong technical understanding with solid practical knowledge. You are ready for senior-level interviews.
             {% elif percentage >= 60 %}
-                <span class="badge bg-warning text-dark px-4 py-2 fs-6">
-                    Intermediate Level
-                </span>
+                Good foundational knowledge. Focus on depth, examples, and structured answers to reach the next level.
             {% else %}
-                <span class="badge bg-danger px-4 py-2 fs-6">
-                    Beginner Level
-                </span>
+                Keep practising core concepts. Review each question's topic and try to explain with real examples.
             {% endif %}
-        </div>
-
-        <hr class="my-4">
-
-<h4 class="fw-bold">Detailed Review</h4>
-
-{% for ans in answers %}
-<div class="card mb-3 shadow-sm">
-    <div class="card-body">
-        <h6 class="fw-bold">Question:</h6>
-        <p>{{ ans.question_text }}</p>
-
-        <h6 class="fw-bold">Your Answer:</h6>
-        <p>{{ ans.response }}</p>
-
-        <h6 class="fw-bold">Score:
-            <span class="badge bg-dark">{{ ans.score }}/10</span>
-        </h6>
-
-        <h6 class="fw-bold mt-2">Feedback:</h6>
-        <p>{{ ans.feedback }}</p>
+        </p>
     </div>
-</div>
-{% endfor %}
 
-        <!-- Feedback Section -->
-        <div class="mb-4">
-            <h5 class="fw-semibold mb-2">Performance Summary</h5>
-            <p class="text-muted">
-                {% if percentage >= 80 %}
-                    Strong technical understanding with solid practical knowledge.
-                {% elif percentage >= 60 %}
-                    Good understanding, but improvement needed in depth and structure.
-                {% else %}
-                    Basic understanding detected. Focus on core concepts and hands-on practice.
-                {% endif %}
-            </p>
-        </div>
+    <!-- Action buttons -->
+    <div class="d-grid gap-3 mt-4">
 
-        <!-- Action Buttons -->
-        <div class="d-grid gap-3 mt-4">
+        <!-- Retake same role -->
+        <a href="{% url 'start_interview' session.job_role.id %}?restart=true"
+           class="btn-retake">
+            Retake This Interview
+        </a>
 
-    <a href="{% url 'select_role' %}" 
-       class="result-primary-btn text-center text-decoration-none">
-       Start New Interview
-    </a>
+        <!-- Try different role -->
+        <a href="{% url 'select_role' %}"
+           class="btn-outline-purple">
+            Try a Different Role
+        </a>
 
-    <a href="{% url 'dashboard' %}" 
-       class="result-secondary-btn text-center text-decoration-none">
-       View Dashboard
-    </a>
-
-</div>
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard' %}"
+           class="btn-outline-purple">
+            View Dashboard
+        </a>
 
     </div>
+
+</div>
 </div>
 
 {% endblock %}
