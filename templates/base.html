@@ -370,6 +370,20 @@ function applyTheme(id) {
     if (saved && saved !== "default") { applyTheme(saved); }
 }());
 
+/* ── Server-side XP injected on every page — single source of truth ── */
+(function () {
+    var serverXP = parseInt("{{ user_total_xp }}", 10) || 0;
+    var storedXP = getTotalXP();
+    /* Always trust the server value; update localStorage if it changed */
+    if (serverXP !== storedXP) {
+        if (serverXP > storedXP) {
+            /* Check for newly unlocked themes */
+            checkThemeUnlocks(storedXP, serverXP);
+        }
+        localStorage.setItem("ai_mock_total_xp", serverXP);
+    }
+}());
+
 /* ── Toast ── */
 function showToast(ico, title, sub, color) {
     var el = document.getElementById("xpToast");
