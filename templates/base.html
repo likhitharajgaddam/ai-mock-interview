@@ -372,18 +372,28 @@ function animate() {
 animate();
 </script>
 <script>
-document.addEventListener("mousemove", (e) => {
-    const x = (window.innerWidth/2 - e.pageX) / 100;
-    const y = (window.innerHeight/2 - e.pageY) / 100;
-    document.querySelector(".glass-card").style.transform =
-        `translate(${x}px, ${y}px)`;
-});
+// Parallax tilt — only active on pages that contain .glass-card (home page).
+// Guard against null to prevent "Cannot read properties of null" on all other pages.
+(function () {
+    const glassCard = document.querySelector(".glass-card");
 
-window.addEventListener("resize", () => {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-});
+    if (glassCard) {
+        document.addEventListener("mousemove", function (e) {
+            const x = (window.innerWidth  / 2 - e.pageX) / 100;
+            const y = (window.innerHeight / 2 - e.pageY) / 100;
+            glassCard.style.transform = "translate(" + x + "px, " + y + "px)";
+        });
+    }
+
+    // Three.js renderer resize — only needed when the renderer was created.
+    if (typeof renderer !== "undefined" && renderer) {
+        window.addEventListener("resize", function () {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    }
+}());
 </script>
 </body>
 </html>

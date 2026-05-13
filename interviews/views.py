@@ -1,18 +1,28 @@
-from django.shortcuts import render, redirect
-from .models import JobRole, InterviewSession, Answer
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.db.models import Avg
 import json
 import os
+import re
 import random
+import logging
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
 from groq import Groq
-from django.http import JsonResponse
+
+from .evaluator import evaluate_answer
+from .models import Answer, InterviewSession, JobRole
+
+logger = logging.getLogger("interviews.views")
 
 MAX_QUESTIONS = 8
-FALLBACK_QUESTIONS = {
 
+# ---------------------------------------------------------------------------
+# Fallback question bank (used only when AI question generation fails)
+# ---------------------------------------------------------------------------
+
+FALLBACK_QUESTIONS = {
     "Software Developer": [
         "Explain REST architecture.",
         "What is dependency injection?",
@@ -21,9 +31,8 @@ FALLBACK_QUESTIONS = {
         "Difference between SQL and NoSQL?",
         "Explain caching strategies.",
         "What is JWT authentication?",
-        "Explain SOLID principles."
+        "Explain SOLID principles.",
     ],
-
     "Cyber Security Analyst": [
         "What is a SIEM?",
         "Explain XSS and CSRF.",
@@ -32,20 +41,18 @@ FALLBACK_QUESTIONS = {
         "What is privilege escalation?",
         "Difference between IDS and IPS?",
         "Explain Zero Trust security.",
-        "What is a SOC workflow?"
+        "What is a SOC workflow?",
     ],
-
     "Data Analyst": [
-        "Explain data normalization.",
+        "Explain data normalisation.",
         "What is EDA?",
         "Difference between supervised and unsupervised learning?",
         "Explain data cleaning techniques.",
         "What is regression analysis?",
         "Explain SQL joins.",
-        "What is data visualization best practice?",
-        "Explain correlation vs causation."
+        "What is data visualisation best practice?",
+        "Explain correlation vs causation.",
     ],
-
     "AI / ML Engineer": [
         "Explain overfitting and underfitting.",
         "What is gradient descent?",
@@ -54,9 +61,8 @@ FALLBACK_QUESTIONS = {
         "What is feature engineering?",
         "Explain bias vs variance.",
         "What is transfer learning?",
-        "Explain hyperparameter tuning."
+        "Explain hyperparameter tuning.",
     ],
-
     "DevOps Engineer": [
         "Explain CI/CD pipeline design.",
         "What is Infrastructure as Code?",
@@ -65,9 +71,8 @@ FALLBACK_QUESTIONS = {
         "What is blue-green deployment?",
         "How do you monitor distributed systems?",
         "Explain container orchestration.",
-        "How would you secure a CI/CD pipeline?"
+        "How would you secure a CI/CD pipeline?",
     ],
-
     "Cloud Engineer": [
         "Explain IAM in cloud platforms.",
         "What is auto scaling?",
@@ -75,21 +80,19 @@ FALLBACK_QUESTIONS = {
         "Explain VPC architecture.",
         "How do you secure cloud storage?",
         "Difference between IaaS, PaaS, and SaaS?",
-        "Explain cloud cost optimization strategies.",
-        "How do you design high availability systems?"
+        "Explain cloud cost optimisation strategies.",
+        "How do you design high availability systems?",
     ],
-
     "Frontend Developer": [
         "What is virtual DOM?",
         "Explain state management in React.",
         "How does browser rendering work?",
         "What is lazy loading?",
         "Explain responsive design principles.",
-        "How do you optimize frontend performance?",
+        "How do you optimise frontend performance?",
         "What are web accessibility best practices?",
-        "Explain CORS."
+        "Explain CORS.",
     ],
-
     "Backend Engineer": [
         "Explain RESTful API design principles.",
         "How do you implement authentication in Django?",
@@ -98,9 +101,8 @@ FALLBACK_QUESTIONS = {
         "How would you design a scalable backend?",
         "What are message queues?",
         "Explain rate limiting.",
-        "How do you handle concurrency?"
+        "How do you handle concurrency?",
     ],
-
     "Site Reliability Engineer": [
         "What is observability?",
         "Explain incident response workflow.",
@@ -109,9 +111,8 @@ FALLBACK_QUESTIONS = {
         "Explain load testing.",
         "How do you monitor microservices?",
         "What is root cause analysis?",
-        "Explain reliability engineering principles."
+        "Explain reliability engineering principles.",
     ],
-
     "Blockchain Developer": [
         "What is a smart contract?",
         "Explain consensus mechanisms.",
@@ -120,9 +121,8 @@ FALLBACK_QUESTIONS = {
         "Difference between public and private blockchain?",
         "Explain token standards like ERC-20.",
         "What is Web3?",
-        "How do you prevent reentrancy attacks?"
+        "How do you prevent reentrancy attacks?",
     ],
-
     "Product Data Scientist": [
         "Explain A/B testing.",
         "How do you measure product success?",
@@ -131,165 +131,155 @@ FALLBACK_QUESTIONS = {
         "How do you design experiments?",
         "What are business KPIs?",
         "Explain churn prediction.",
-        "How do you communicate data insights?"
+        "How do you communicate data insights?",
     ],
-
     "Full Stack Web Developer": [
         "Explain how frontend and backend communicate.",
         "What is JWT authentication?",
         "How would you design a scalable web app?",
-        "Explain database normalization.",
+        "Explain database normalisation.",
         "How do you deploy a web application?",
         "What is CORS?",
         "Explain MVC architecture.",
-        "How do you secure a web application?"
+        "How do you secure a web application?",
     ],
 }
 
-groq_api_key = os.environ.get("GROQ_API_KEY")
-if groq_api_key:
-    groq_client = Groq(api_key=groq_api_key)
-else:
-    groq_client = None
-    print("WARNING: GROQ_API_KEY not found in environment. AI features will fallback to default questions.")
+
+# ---------------------------------------------------------------------------
+# Groq client for question generation (separate from evaluator)
+# ---------------------------------------------------------------------------
+
+def _get_groq_client() -> Groq | None:
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not key:
+        logger.warning("GROQ_API_KEY not set — AI question generation disabled.")
+        return None
+    return Groq(api_key=key)
 
 
-def generate_ai_questions_logic(role, count=8):
-    prompt = f"""
-Generate {count} different advanced technical interview questions.
+# ---------------------------------------------------------------------------
+# AI question generation
+# ---------------------------------------------------------------------------
 
-Role: {role.name}
-Description: {role.description}
+def generate_ai_questions_logic(role, count: int = 8) -> list[str]:
+    client = _get_groq_client()
+    if client is None:
+        return _fallback_questions(role)
 
-Return only numbered questions.
-"""
+    prompt = (
+        f"Generate {count} different advanced technical interview questions.\n\n"
+        f"Role: {role.name}\n"
+        f"Description: {role.description}\n\n"
+        "Return only numbered questions, one per line."
+    )
 
     try:
-        response = groq_client.chat.completions.create(
+        response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.9
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.9,
+            max_tokens=600,
         )
-
         text = response.choices[0].message.content.strip()
-
         questions = []
         for line in text.split("\n"):
             line = line.strip()
             if line:
-                line = line.split(". ", 1)[-1]
-                questions.append(line)
+                # Strip leading "1. " / "1) " numbering
+                line = re.sub(r"^\d+[\.\)]\s*", "", line)
+                if line:
+                    questions.append(line)
+        if questions:
+            return questions[:count]
+    except Exception as exc:
+        logger.error("AI question generation failed: %s", exc)
 
-        return questions[:count]
+    return _fallback_questions(role)
 
-    except Exception as e:
-        print("Groq Error:", e)
-        return FALLBACK_QUESTIONS.get(
-            role.name,
-            random.choice(list(FALLBACK_QUESTIONS.values()))
-        )
 
-def generate_ai_question(request):
-    role_name = request.GET.get("role", "Software Developer")
+def _fallback_questions(role) -> list[str]:
+    questions = FALLBACK_QUESTIONS.get(
+        role.name,
+        random.choice(list(FALLBACK_QUESTIONS.values())),
+    )
+    return list(questions)
 
-    try:
-        role = JobRole.objects.get(name=role_name)
-    except:
-        return JsonResponse({
-            "questions": FALLBACK_QUESTIONS["Software Developer"]
-        })
 
-    questions = generate_ai_questions_logic(role)
+# ---------------------------------------------------------------------------
+# Views
+# ---------------------------------------------------------------------------
 
-    return JsonResponse({"questions": questions})
+def home(request):
+    if request.user.is_authenticated:
+        return redirect("select_role")
+    return render(request, "home.html")
+
+
+def about(request):
+    return render(request, "about.html")
+
+
+def register(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("login")
+    else:
+        form = UserCreationForm()
+    return render(request, "register.html", {"form": form})
 
 
 @never_cache
 @login_required
 def select_role(request):
-
-    # Clear ALL interview sessions when coming to role selection
-    keys_to_remove = [key for key in request.session.keys() if key.startswith("interview_role_")]
-
+    # Clear all in-progress interview sessions when returning to role selection
+    keys_to_remove = [k for k in request.session.keys() if k.startswith("interview_role_")]
     for key in keys_to_remove:
         request.session.pop(key, None)
 
     roles = JobRole.objects.all()
-    return render(request, 'select_role.html', {'roles': roles})
+    return render(request, "select_role.html", {"roles": roles})
 
-
-def ai_next_step(role, conversation_history):
-    try:
-        prompt = f"""
-You are a professional technical interviewer for the role: {role.name}
-
-Conversation so far:
-{conversation_history}
-
-Ask the next technical question.
-"""
-
-        response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7
-        )
-
-        return response.choices[0].message.content.strip()
-
-    except Exception as e:
-        print("Groq Conversation Error:", e)
-        return "INTERVIEW_COMPLETE"
 
 @never_cache
 @login_required
 def start_interview(request, role_id):
-
     role = JobRole.objects.get(id=role_id)
     session_key = f"interview_role_{role_id}"
 
-    # Restart only if explicitly requested
+    # Explicit restart
     if request.GET.get("restart") == "true":
         request.session.pop(session_key, None)
         return redirect("start_interview", role_id=role.id)
 
-    # Initialize only if session doesn't exist
+    # Initialise session if not present
     if session_key not in request.session:
-        try:
-            questions = generate_ai_questions_logic(role, MAX_QUESTIONS)
-            random.shuffle(questions)
-        except Exception:
-            questions = FALLBACK_QUESTIONS.get(
-                role.name,
-                FALLBACK_QUESTIONS["Software Developer"]
-            )
-            random.shuffle(questions)
-
+        questions = generate_ai_questions_logic(role, MAX_QUESTIONS)
+        random.shuffle(questions)
         request.session[session_key] = {
             "question_number": 1,
             "questions": questions,
             "total_score": 0,
-            "answers": []
+            "answers": [],
         }
 
     interview_data = request.session[session_key]
     question_number = interview_data["question_number"]
     questions = interview_data["questions"]
 
-    # Finish interview
+    # ---- Interview complete ----
     if question_number > MAX_QUESTIONS:
-
-        total_score = interview_data["total_score"]
-        percentage = int((total_score / (MAX_QUESTIONS * 10)) * 100)
+        total_raw = interview_data["total_score"]
+        # total_raw is sum of overall_score (0-100 each); normalise to percentage
+        percentage = int((total_raw / (MAX_QUESTIONS * 100)) * 100)
+        percentage = max(0, min(100, percentage))
 
         interview_session = InterviewSession.objects.create(
             user=request.user,
             job_role=role,
-            total_score=percentage
+            total_score=percentage,
         )
 
         for ans in interview_data["answers"]:
@@ -298,150 +288,90 @@ def start_interview(request, role_id):
                 question_text=ans["question"],
                 response=ans["user_answer"],
                 score=ans["score"],
-                feedback=ans["feedback"]
+                feedback=ans["feedback"],
             )
 
         request.session.pop(session_key, None)
-
         return redirect("interview_result", session_id=interview_session.id)
 
     question = questions[question_number - 1]
 
+    # ---- Handle POST (answer submission) ----
     if request.method == "POST":
-
-        user_answer = request.POST.get("answer")
+        user_answer = request.POST.get("answer", "").strip()
 
         if not user_answer:
             return render(request, "interview.html", {
                 "role": role,
                 "question": question,
                 "question_number": question_number,
-                "progress_percentage": int(((question_number-1)/MAX_QUESTIONS)*100),
-                "error": "Please answer before submitting."
+                "progress_percentage": int(((question_number - 1) / MAX_QUESTIONS) * 100),
+                "error": "Please write an answer before submitting.",
             })
 
-        score, feedback = evaluate_answer_with_ai(
-            question,
-            user_answer,
-            role.name,
-            request.session.get("last_answer")
+        # ---- Core evaluation call ----
+        evaluation = evaluate_answer(
+            question=question,
+            answer=user_answer,
+            role=role.name,
         )
 
+        # Map 0-100 overall_score to a 0-10 display score for the result page
+        overall = evaluation.get("overall_score", 0)
+        display_score = round(overall / 10)
+
         interview_data["answers"].append({
-            "question": question,
+            "question":    question,
             "user_answer": user_answer,
-            "score": score,
-            "feedback": feedback
+            "score":       display_score,
+            "feedback":    evaluation.get("feedback", ""),
+            # Store full evaluation for future analytics
+            "evaluation":  {
+                "technical_score":     evaluation.get("technical_score", 0),
+                "communication_score": evaluation.get("communication_score", 0),
+                "confidence_score":    evaluation.get("confidence_score", 0),
+                "answer_quality":      evaluation.get("answer_quality", ""),
+                "strengths":           evaluation.get("strengths", []),
+                "weaknesses":          evaluation.get("weaknesses", []),
+                "improvement_tips":    evaluation.get("improvement_tips", []),
+                "follow_up_questions": evaluation.get("follow_up_questions", []),
+            },
         })
 
-        interview_data["total_score"] += score
+        interview_data["total_score"] += overall
         interview_data["question_number"] += 1
-
-        request.session["last_answer"] = user_answer
         request.session[session_key] = interview_data
 
         return redirect(request.path)
 
+    # ---- GET — render question ----
     progress_percentage = int(((question_number - 1) / MAX_QUESTIONS) * 100)
-
     return render(request, "interview.html", {
         "role": role,
         "question": question,
         "question_number": question_number,
-        "progress_percentage": progress_percentage
+        "progress_percentage": progress_percentage,
     })
-
-
-def register(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('login')
-    else:
-        form = UserCreationForm()
-
-    return render(request, 'register.html', {'form': form})
-
-
-
-def evaluate_answer_with_ai(question_text, user_answer, role_name, last_answer):
-
-    try:
-        prompt = f"""
-You are a STRICT senior technical interviewer.
-
-If the answer is incomplete, vague, off-topic, or less than 2 meaningful sentences,
-you MUST give 0 to 3 score.
-
-If the answer is a single sentence or generic like "using django",
-you MUST give 0.
-
-Role: {role_name}
-
-Question:
-{question_text}
-
-Answer:
-{user_answer}
-
-Be strict and realistic like a FAANG interviewer.
-
-Return exactly:
-
-Score: X/10
-Feedback: short explanation.
-"""
-
-        response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.5
-        )
-
-        text = response.choices[0].message.content
-
-        import re
-        match = re.search(r"(\d+)/10", text)
-
-        if match:
-            score = int(match.group(1))
-        else:
-            score = 5
-
-        feedback_match = re.search(r"Feedback:\s*(.*)", text, re.DOTALL)
-        feedback = feedback_match.group(1).strip() if feedback_match else "Answer evaluated."
-
-        return score, feedback
-
-    except Exception as e:
-        print("Groq Scoring Error:", e)
-        return 5, "Fallback evaluation."
-    
-
-from django.shortcuts import render, redirect
-
-
-def home(request):
-    if request.user.is_authenticated:
-        return redirect('select_role')  
-
-    return render(request, 'home.html') 
-
-def about(request):
-    return render(request, "about.html")
-
 
 
 @login_required
 def interview_result(request, session_id):
     session = InterviewSession.objects.get(id=session_id, user=request.user)
     answers = session.answer_set.all()
-
     return render(request, "result.html", {
         "role": session.job_role,
         "percentage": session.total_score,
-        "answers": answers
+        "answers": answers,
     })
+
+
+def generate_ai_question(request):
+    """API endpoint — returns AI-generated questions for a role."""
+    role_name = request.GET.get("role", "Software Developer")
+    try:
+        role = JobRole.objects.get(name=role_name)
+    except JobRole.DoesNotExist:
+        return JsonResponse({"questions": FALLBACK_QUESTIONS["Software Developer"]})
+
+    questions = generate_ai_questions_logic(role)
+    return JsonResponse({"questions": questions})
