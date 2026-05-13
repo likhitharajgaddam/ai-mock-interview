@@ -176,6 +176,69 @@
     </div>
 </div>
 
+<!-- ── DOMAIN XP PROGRESSION ───────────────────────────────────── -->
+{% if domain_cards %}
+<div class="glass mb-4">
+    <div class="sec-label">CAREER DOMAIN PROGRESSION</div>
+    <p style="font-size:13px;color:#64748b !important;margin-bottom:20px;">
+        XP is earned per domain based on answer quality — not role selection.
+        Strong answers earn more; gibberish earns nothing.
+    </p>
+
+    {% if primary_domain %}
+    <!-- Primary domain highlight -->
+    <div style="background:rgba(20,28,50,0.7);border:1px solid rgba(124,58,237,0.2);border-radius:14px;padding:18px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+            <span style="font-size:28px;">{{ primary_domain.icon }}</span>
+            <div>
+                <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:#6366f1 !important;">PRIMARY SPECIALISATION</div>
+                <div style="font-size:18px;font-weight:900;">{{ primary_domain.current_title }}</div>
+            </div>
+            <div style="margin-left:auto;text-align:right;">
+                <div style="font-size:20px;font-weight:900;color:#fcd34d !important;">{{ primary_domain.xp }} XP</div>
+                <div style="font-size:11px;color:#64748b !important;">Level {{ primary_domain.level }}</div>
+            </div>
+        </div>
+        <div style="height:8px;background:rgba(30,41,59,0.8);border-radius:8px;overflow:hidden;margin-bottom:8px;">
+            <div style="height:100%;border-radius:8px;background:linear-gradient(90deg,#4f46e5,#7c3aed);width:{{ primary_domain.progress_pct }}%;transition:width 1s ease;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569 !important;">
+            <span>{{ primary_domain.current_title }}</span>
+            <span>→ {{ primary_domain.next_title }}</span>
+        </div>
+        {% if recommendations %}
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(124,58,237,0.15);">
+            <div style="font-size:11px;font-weight:700;color:#6366f1 !important;margin-bottom:8px;letter-spacing:0.5px;">RECOMMENDED NEXT STEPS</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                {% for step in recommendations %}
+                <span style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;color:#a5b4fc !important;">{{ step }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- All domain bars -->
+    {% for dc in domain_cards %}
+    <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:16px;">{{ dc.icon }}</span>
+                <span style="font-size:13px;font-weight:700;">{{ dc.label }}</span>
+                <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);color:#a5b4fc !important;">Lv.{{ dc.level }}</span>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:#fcd34d !important;">{{ dc.xp }} XP</span>
+        </div>
+        <div style="height:5px;background:rgba(30,41,59,0.8);border-radius:5px;overflow:hidden;">
+            <div style="height:100%;border-radius:5px;background:{{ dc.color }};width:{{ dc.progress_pct }}%;transition:width 1s ease;opacity:0.85;"></div>
+        </div>
+        <div style="font-size:11px;color:#475569 !important;margin-top:3px;">{{ dc.current_title }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <!-- ── HIRING READINESS + AI INSIGHTS ─────────────────────────── -->
 <div class="row g-3 mb-4">
 

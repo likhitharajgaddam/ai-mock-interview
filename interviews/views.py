@@ -241,6 +241,65 @@ FALLBACK_QUESTIONS = {
     ],
 }
 
+# ---------------------------------------------------------------------------
+# Domain mapping — maps role names to career domains
+# Used for domain-specific XP tracking
+# ---------------------------------------------------------------------------
+
+ROLE_DOMAIN = {
+    "Frontend Developer":       "frontend",
+    "Backend Engineer":         "backend",
+    "Full Stack Web Developer": "fullstack",
+    "Software Developer":       "backend",
+    "Cyber Security Analyst":   "security",
+    "AI / ML Engineer":         "ai_ml",
+    "Data Analyst":             "data",
+    "Product Data Scientist":   "data",
+    "DevOps Engineer":          "devops",
+    "Cloud Engineer":           "cloud",
+    "Site Reliability Engineer":"devops",
+    "Blockchain Developer":     "blockchain",
+}
+
+DOMAIN_META = {
+    "frontend":   {"label": "Frontend",    "icon": "🎨", "color": "#e879f9",
+                   "career": ["Junior Frontend Dev", "Frontend Engineer", "Senior Frontend Engineer", "Lead UI Architect"],
+                   "next":   ["Full Stack", "Backend APIs", "React Performance"]},
+    "backend":    {"label": "Backend",     "icon": "🔧", "color": "#a78bfa",
+                   "career": ["Junior Backend Dev", "Backend Engineer", "Senior Engineer", "Principal Engineer"],
+                   "next":   ["System Design", "Cloud Infrastructure", "Distributed Systems"]},
+    "fullstack":  {"label": "Full Stack",  "icon": "🌐", "color": "#60a5fa",
+                   "career": ["Junior Full Stack Dev", "Full Stack Engineer", "Senior Full Stack", "Tech Lead"],
+                   "next":   ["System Design", "DevOps", "Cloud Architecture"]},
+    "security":   {"label": "Security",    "icon": "🔒", "color": "#f87171",
+                   "career": ["Security Analyst", "Security Engineer", "Senior Security Engineer", "CISO"],
+                   "next":   ["Penetration Testing", "Cloud Security", "Threat Intelligence"]},
+    "ai_ml":      {"label": "AI / ML",     "icon": "🤖", "color": "#f59e0b",
+                   "career": ["ML Engineer", "AI Engineer", "Senior ML Engineer", "AI Research Lead"],
+                   "next":   ["MLOps", "Deep Learning", "LLM Engineering"]},
+    "data":       {"label": "Data",        "icon": "📊", "color": "#34d399",
+                   "career": ["Data Analyst", "Senior Analyst", "Data Scientist", "Principal Data Scientist"],
+                   "next":   ["Machine Learning", "Data Engineering", "Business Intelligence"]},
+    "devops":     {"label": "DevOps / SRE","icon": "⚙️", "color": "#fb923c",
+                   "career": ["DevOps Engineer", "Senior DevOps", "SRE", "Platform Engineering Lead"],
+                   "next":   ["Cloud Architecture", "Kubernetes Expert", "Platform Engineering"]},
+    "cloud":      {"label": "Cloud",       "icon": "☁️", "color": "#38bdf8",
+                   "career": ["Cloud Engineer", "Senior Cloud Engineer", "Cloud Architect", "Principal Architect"],
+                   "next":   ["Multi-Cloud Strategy", "FinOps", "Cloud Security"]},
+    "blockchain": {"label": "Blockchain",  "icon": "⛓️", "color": "#fbbf24",
+                   "career": ["Blockchain Dev", "Smart Contract Engineer", "Senior Web3 Engineer", "Protocol Engineer"],
+                   "next":   ["DeFi Protocols", "Layer 2 Solutions", "Web3 Security"]},
+}
+
+# XP thresholds for career level within a domain
+DOMAIN_LEVEL_THRESHOLDS = [0, 30, 80, 160, 280]  # XP needed for levels 1-5
+
+
+def _get_domain(role_name):
+    # type: (str) -> str
+    return ROLE_DOMAIN.get(role_name, "backend")
+
+
 # Ensure every role has at least MAX_QUESTIONS entries
 for _role_name, _qs in FALLBACK_QUESTIONS.items():
     assert len(_qs) >= MAX_QUESTIONS, (
@@ -508,6 +567,14 @@ def start_interview(request, role_id):
         interview_data["total_score"]     += overall
         interview_data["question_number"] += 1
         request.session[session_key]       = interview_data
+
+        # ── Update domain XP in session ────────────────────────────
+        domain = _get_domain(role.name)
+        domain_xp_key = "domain_xp"
+        domain_xp = request.session.get(domain_xp_key, {})
+        domain_xp[domain] = domain_xp.get(domain, 0) + xp_gained
+        request.session[domain_xp_key] = domain_xp
+
         return redirect(request.path)
 
     # ---- GET — show question ----

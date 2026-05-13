@@ -164,7 +164,7 @@
     <div class="career-hero">
         <div class="eyebrow">🎮 CHOOSE YOUR CAREER PATH</div>
         <h1>Select Your Interview Role</h1>
-        <p>Pick a specialisation and begin your AI-powered technical interview</p>
+        <p>Pick a specialisation — XP earned is tracked per domain and builds your career progression</p>
     </div>
 
     <div class="stats-bar">
@@ -180,7 +180,7 @@
 
             {% if "Security" in role.name or "Cyber" in role.name %}
             <div class="role-card rc-red">
-                <span class="xp-badge">+800 XP</span>
+                <span class="xp-badge">🔒 SECURITY XP</span>
                 <div class="role-icon-wrap">🔒</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">SECURITY</span>
@@ -188,7 +188,7 @@
 
             {% elif "Data Analyst" in role.name %}
             <div class="role-card rc-green">
-                <span class="xp-badge">+600 XP</span>
+                <span class="xp-badge">📊 DATA XP</span>
                 <div class="role-icon-wrap">📊</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">ANALYTICS</span>
@@ -196,7 +196,7 @@
 
             {% elif "ML" in role.name or "AI" in role.name %}
             <div class="role-card rc-amber">
-                <span class="xp-badge">+1000 XP</span>
+                <span class="xp-badge">🤖 AI/ML XP</span>
                 <div class="role-icon-wrap">🤖</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">AI / ML</span>
@@ -204,7 +204,7 @@
 
             {% elif "DevOps" in role.name %}
             <div class="role-card rc-orange">
-                <span class="xp-badge">+750 XP</span>
+                <span class="xp-badge">⚙️ DEVOPS XP</span>
                 <div class="role-icon-wrap">⚙️</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">DEVOPS</span>
@@ -212,7 +212,7 @@
 
             {% elif "Cloud" in role.name %}
             <div class="role-card rc-sky">
-                <span class="xp-badge">+700 XP</span>
+                <span class="xp-badge">☁️ CLOUD XP</span>
                 <div class="role-icon-wrap">☁️</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">CLOUD</span>
@@ -220,7 +220,7 @@
 
             {% elif "Frontend" in role.name %}
             <div class="role-card rc-pink">
-                <span class="xp-badge">+550 XP</span>
+                <span class="xp-badge">🎨 FRONTEND XP</span>
                 <div class="role-icon-wrap">🎨</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">FRONTEND</span>
@@ -228,7 +228,7 @@
 
             {% elif "Backend" in role.name %}
             <div class="role-card rc-purple">
-                <span class="xp-badge">+650 XP</span>
+                <span class="xp-badge">🔧 BACKEND XP</span>
                 <div class="role-icon-wrap">🔧</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">BACKEND</span>
@@ -236,7 +236,7 @@
 
             {% elif "Reliability" in role.name %}
             <div class="role-card rc-lime">
-                <span class="xp-badge">+850 XP</span>
+                <span class="xp-badge">🛡️ DEVOPS XP</span>
                 <div class="role-icon-wrap">🛡️</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">SRE</span>
@@ -244,7 +244,7 @@
 
             {% elif "Blockchain" in role.name %}
             <div class="role-card rc-gold">
-                <span class="xp-badge">+900 XP</span>
+                <span class="xp-badge">⛓️ WEB3 XP</span>
                 <div class="role-icon-wrap">⛓️</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">WEB3</span>
@@ -252,7 +252,7 @@
 
             {% elif "Scientist" in role.name %}
             <div class="role-card rc-teal">
-                <span class="xp-badge">+700 XP</span>
+                <span class="xp-badge">🔬 DATA XP</span>
                 <div class="role-icon-wrap">🔬</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">DATA SCIENCE</span>
@@ -260,7 +260,7 @@
 
             {% elif "Full Stack" in role.name %}
             <div class="role-card rc-blue">
-                <span class="xp-badge">+750 XP</span>
+                <span class="xp-badge">🌐 FULL STACK XP</span>
                 <div class="role-icon-wrap">🌐</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">FULL STACK</span>
@@ -268,7 +268,7 @@
 
             {% else %}
             <div class="role-card rc-purple">
-                <span class="xp-badge">+600 XP</span>
+                <span class="xp-badge">💻 BACKEND XP</span>
                 <div class="role-icon-wrap">💻</div>
                 <div class="role-name">{{ role.name }}</div>
                 <span class="role-tag">DEVELOPER</span>
